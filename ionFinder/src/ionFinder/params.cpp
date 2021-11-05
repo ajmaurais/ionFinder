@@ -87,7 +87,9 @@ bool IonFinder::Params::getArgs(int argc, const char* const argv[])
                 usage(IonFinder::ARG_REQUIRED_STR + argv[i-1]);
                 return false;
             }
-            if(!(!strcmp(argv[i], DTAFILTER_INPUT_STR.c_str()) || !strcmp(argv[i], TSV_INPUT_STR.c_str())))
+            if(!(!strcmp(argv[i], DTAFILTER_INPUT_STR.c_str()) ||
+                 !strcmp(argv[i], TSV_INPUT_STR.c_str()) ||
+                 !strcmp(argv[i], PD_INPUT_STR.c_str())))
             {
                 std::cerr << argv[i] << base::PARAM_ERROR_MESSAGE << argv[i-1] << std::endl;
                 return false;
@@ -535,9 +537,9 @@ bool IonFinder::Params::getArgs(int argc, const char* const argv[])
             return false;
         }
     }
-    else if(_inputMode == TSV_INPUT_STR) {
+    else if(_inputMode == TSV_INPUT_STR || _inputMode == PD_INPUT_STR) {
         if(_inDirs.size() == 0) {
-            std::cerr << "ERROR: Input file name is required when using tsv input mode!\n";
+            std::cerr << "ERROR: Input file name is required when using " << PD_INPUT_STR << " input mode!\n";
             usage();
             return false;
         }

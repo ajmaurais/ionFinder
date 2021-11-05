@@ -30,6 +30,7 @@
 #include <ionFinder/ionFinder.hpp>
 #include <ionFinder/params.hpp>
 #include <dtafilter.hpp>
+#include <proteomeDiscoverer.hpp>
 #include <ionFinder/inputFiles.hpp>
 #include <ionFinder/datProc.hpp>
 

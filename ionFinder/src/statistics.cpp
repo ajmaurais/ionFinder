@@ -33,7 +33,7 @@ double statistics::TDist::calcCoeff() const {
     return ret;
 }
 
- //! Set number of degrees of freedom.
+//! Set number of degrees of freedom.
 void statistics::TDist::setNu(double nu){
     _nu = nu;
     _coeff = calcCoeff();

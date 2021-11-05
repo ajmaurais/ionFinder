@@ -48,6 +48,7 @@ namespace IonFinder{
 	std::string const PEPTIDE_CIT_STATS_OFNAME = "peptide_cit_stats.tsv";
 	std::string const DTAFILTER_INPUT_STR = "dtafilter";
 	std::string const TSV_INPUT_STR = "tsv";
+	std::string const PD_INPUT_STR = "pd";
 	std::string const ARG_REQUIRED_STR = "Additional argument required for: ";
 
     //!default residues which are isobaric with a modification

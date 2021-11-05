@@ -44,12 +44,13 @@ add_executable(${ION_FINDER_TARGET}
         src/ionFinder/datProc.cpp
         src/ionFinder/inputFiles.cpp
         src/ionFinder/params.cpp
-		src/msInterface.cpp)
+		src/msInterface.cpp
+        src/thirdparty/sqlite3/sqlite3.c
+        src/proteomeDiscoverer.cpp)
 
 target_include_directories(${ION_FINDER_TARGET}
         PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
         PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/include)
-
 
 # add zlib library
 option(ENABLE_ZLIB "Link to zlib?" ON)

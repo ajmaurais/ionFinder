@@ -37,8 +37,8 @@ int main(int argc, const char** argv)
 
 	//read input files
 	std::vector<Dtafilter::Scan> scans;
-	if(pars.getInputMode() == IonFinder::DTAFILTER_INPUT_STR)
-	{
+	std::vector<pd::Peptide> pd_peptides;
+	if(pars.getInputMode() == IonFinder::DTAFILTER_INPUT_STR){
 		std::cout << "\nReading DTAFilter-files...";
 		if(!Dtafilter::readFilterFiles(pars, scans))
 		{
@@ -47,18 +47,31 @@ int main(int argc, const char** argv)
 		}
 		else std::cout << "Done!\n";
 	}
-	else{
-		assert(pars.getInputMode() == IonFinder::TSV_INPUT_STR);
+	else if(pars.getInputMode() == IonFinder::PD_INPUT_STR){
+	    std::cout << "\nReading pdResults file...";
+	    if(pars.getInputDirs().size() > 1){
+	        std::cerr << "Only 1 pdResult file allowed!" << NEW_LINE;
+	        return -1;
+	    }
+	    std::vector<pd::PSM> PSMs;
+	    if(!pd::readPD(pars.getInputDirs().at(0), pd_peptides, PSMs)){
+            std::cerr << "Failed to read pdResult file!" << NEW_LINE;
+	        return -1;
+	    }
+	}
+    else{
+        assert(pars.getInputMode() == IonFinder::TSV_INPUT_STR);
 		std::cout << "\nReading input .tsv files...";
 		for(auto file: pars.getInputDirs())
 		{
-            if(!IonFinder::readInputTsv(file,scans, !pars.getIncludeReverse(), pars.getModFilter())) {
+            if(!IonFinder::readInputTsv(file, scans, !pars.getIncludeReverse(), pars.getModFilter())) {
                 std::cerr << "Failed to read input .tsv files!" << NEW_LINE;
                 return -1;
             }
         }
 		std::cout << "Done!\n";
 	}
+
 	
 	//calculate and find fragments
 	std::vector<PeptideNamespace::Peptide> peptides;
