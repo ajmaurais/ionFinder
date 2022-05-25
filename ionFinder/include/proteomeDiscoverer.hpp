@@ -150,23 +150,25 @@ namespace pd{
         std::string getAbbreviation() const{
             return _abbreviation;
         }
+        std::string str() const;
     };
 
     class Residue{
     private:
         AminoAcid _aminoAcid;
         Modification _modification;
-        bool isModified;
+        bool _isModified;
     public:
         Residue(){
-            isModified = false;
+            _isModified = false;
         };
         explicit Residue(const AminoAcid& aa){
             _aminoAcid = aa;
-            isModified = false;
+            _isModified = false;
         }
 
         void setModification(const Modification& m){
+            _isModified = true;
             _modification = m;
         }
 
@@ -182,25 +184,33 @@ namespace pd{
         Modification& getModification(){
             return _modification;
         }
+        bool isModified() const{
+            return _isModified;
+        }
 
         std::string str() const;
+
     };
 
-    class PeptideSequence{
+    class PeptideSequence: public Formula{
     private:
         std::vector<Residue> _residues;
         std::string sequence;
-    public:
-        PeptideSequence(){}
-        PeptideSequence(std::string s){
-            setSequence(s);
-        }
 
-        void setSequence(std::string);
+    public:
+        PeptideSequence(): Formula(){}
+
+        void clear();
+        void setSequence(std::string, const std::map<std::string, AminoAcid>&);
         void addModification(const Modification&m, int index);
 
         std::string str() const;
-        std::string getSequence() const;
+        const std::string& getSequence() const{
+            return sequence;
+        }
+//        const std::vector<Residue>& getResidues() const{
+//            return _residues;
+//        }
     };
 
     class Peptide{
@@ -252,6 +262,7 @@ namespace pd{
     bool readPD(std::string fname, std::vector<Peptide>& peptides, std::vector<PSM>& PSMs);
     void parseAAFormula(const std::string& s, Formula& f);
     void parseModFormula(const std::string& s, Formula& f);
+    void parseResidueModification(const std::string& s, Modification& m, const std::regex& re);
     std::string my_sqlite3_column_string(sqlite3_stmt* s, int i);
 }
 

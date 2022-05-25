@@ -92,6 +92,8 @@ namespace pd {
         _abbreviation = "";
     }
 
+    //
+
     void Formula::add(Formula::ATOM a, int count) {
         if(_formula.find(a) == _formula.end())
             set(a, count);
@@ -219,6 +221,12 @@ namespace pd {
         return std::string(reinterpret_cast<const char*>(sqlite3_column_text(s, i)));
     }
 
+    std::string Modification::str() const{
+        std::string ret = "(";
+
+        return ret;
+    }
+
     std::string Residue::str() const {
         return _aminoAcid.getOneLetterCode() + _modification.str();
     }
@@ -227,6 +235,44 @@ namespace pd {
         std::string ret = "";
 
         return ret;
+    }
+
+    void PeptideSequence::clear() {
+        Formula::clear();
+        _residues.clear();
+        sequence.clear();
+    }
+
+    /**
+     * Populate sequence with Residue objects.
+     * @param s string representation of peptide.
+     * @param aa A map of amino acids objects used to build sequence.
+     */
+    void PeptideSequence::setSequence(std::string s, const std::map<std::string, AminoAcid>& aa) {
+        clear();
+        sequence = s;
+
+        // update residues
+        _residues.emplace_back(aa.at("Nte")); // Add n term
+        for(auto c: s) _residues.emplace_back(aa.at(std::string(1, c))); // add residues
+        _residues.emplace_back(aa.at("Cte")); // Add n term
+
+        // Update formula
+        // Skip modifications because that should be empty at this point
+        for(auto r: _residues) {
+            add(r.getAminoAcid());
+        }
+    }
+
+    /**
+     * Add Modification \p m at index \p index.
+     * @param m Modification to add.
+     * @param index Index of modification. The first amino acid is index 1. The n terminus is index 0.
+     * The C terminus is index sequence.length() + 1.
+     */
+    void PeptideSequence::addModification(const Modification &m, int index) {
+        _residues.at(index).setModification(m);
+        add(m);
     }
 
     bool readPD(std::string fname, std::vector<Peptide> &peptides, std::vector<PSM> &PSMs)
@@ -253,7 +299,7 @@ namespace pd {
                 MonoisotopicMass,   -- 3
                 AverageMass,        -- 4
                 SumFormula          -- 5
-            FROM AminoAcids         -- 6
+            FROM AminoAcids
             WHERE SumFormula IS NOT "";
         )";
         sqlite3_prepare_v2(connection, aa_query.c_str(), -1, &stmt, nullptr);
@@ -264,8 +310,12 @@ namespace pd {
         }
         for(; rc == SQLITE_ROW; rc = sqlite3_step(stmt)) {
             AminoAcid temp;
-            std::string key = my_sqlite3_column_string(stmt, 1);
-            temp.setThreeLetterCode(key);
+            std::string oneLetter = my_sqlite3_column_string(stmt, 2);
+            std::string threeLetter = my_sqlite3_column_string(stmt, 1);
+            std::string key;
+            if(threeLetter == "Nte" || threeLetter == "Cte") key = threeLetter; // use three letter for termini
+            else key = oneLetter; // use one letter for residues
+            temp.setThreeLetterCode(threeLetter);
             temp.setName(my_sqlite3_column_string(stmt, 0));
             temp.setOneLetterCode(my_sqlite3_column_string(stmt, 2));
             temp.setMonoMass(sqlite3_column_double(stmt, 3));
@@ -354,9 +404,54 @@ namespace pd {
             std::cerr << NEW_LINE << "ERROR: Could not retrieve modifications!" << NEW_LINE;
             return false;
         }
+        std::regex modification_regex = std::regex(R"((?:([A-Z])([0-9]+)|([NC]-Term)(?:\([A-Za-z0-9]+\))?)\(([A-Za-z0-9+\-_ ]+)\))");
+        PeptideSequence pepSeq;
         for(; rc == SQLITE_ROW; rc = sqlite3_step(stmt)) {
-            std::string mods =
-        }
+            pepSeq.clear();
+
+            // parse sequence
+            std::string seq = my_sqlite3_column_string(stmt, 3);
+            pepSeq.setSequence(seq, aminoAcids);
+
+            //parse modifications
+            std::string mods = my_sqlite3_column_string(stmt, 4);
+            if(!mods.empty()) {
+                std::vector<std::string> elems;
+                utils::split(mods, ';', elems);
+                utils::trimAll(elems);
+                for (const auto& m: elems) {
+                    Modification mod;
+                    std::smatch matches;
+                    if (!std::regex_search(m, matches, modification_regex))
+                        throw std::runtime_error("Could not parse modification: \"" + m + "\"\n");
+
+                    // get modification object corresponding to name
+                    std::string key = matches[4];
+                    const auto mod_temp = modifications.find(key);
+                    if(mod_temp == modifications.end())
+                        throw std::runtime_error("Unknown modification: \"" + m + "\"\n");
+                    mod = mod_temp->second;
+
+                    // process differently depending on whether mod is on peptide terminus or residue
+                    if(matches[3] == "") {  // mod is on residue
+                        int number = std::stoi(matches[2]);
+                        char res = std::string(matches[1])[0]; // This is ok because the regex only allows 1 char
+                        if(pepSeq.getSequence()[number - 1] != res)
+                            throw std::runtime_error("Modifications do not match sequence: " + seq + ", " + m);
+                        pepSeq.addModification(mod, number);
+                    }
+                    else{ // mod is on terminus
+                        std::string terminus = matches[3];
+                        int number;
+                        if(terminus == "N-term") number = 0;
+                        else if(terminus == "C-term") number = int(pepSeq.getSequence().length()) + 1;
+                        else throw std::runtime_error("Unknown peptide terminus: \"" + terminus + "\"\n");
+                        pepSeq.addModification(mod, number);
+                    }
+
+                } // end for each modification
+            } // end if !mods.empty()
+        } //end for each SQLite row
 
         // get peptides
 
@@ -365,5 +460,13 @@ namespace pd {
         sqlite3_close(connection);
         return true;
     }
+
+//    void parseResidueModification(const std::string &s, Modification &m, const std::regex& re) {
+//        std::smatch matches;
+//        for(const auto& e: elems){
+//            if(!std::regex_search(e, matches, re))
+//                throw std::runtime_error("Could not parse atom element: " + e);
+//    }
+
 
 } // end of namespace
