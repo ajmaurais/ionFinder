@@ -27,5 +27,9 @@ RUN cd /code/ionFinder && \
 RUN cd /code/ionFinder/ionFinder && mkdir lib && \
     Rscript rpackages/install_packages.R
 
+# make copyExamples script
+RUN echo '#!/bin/bash\ncp -r /code/ionFinder/ionFinder/examples /data' > /usr/local/bin/copyExamples && \
+    chmod +x /usr/local/bin/copyExamples
+
 WORKDIR /data
 
