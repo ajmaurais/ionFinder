@@ -1,7 +1,22 @@
 # ionFinder
 Search MS2 spectra for diagnostic neutral loss ions.
 
+# Docker image 
+
+A docker image with `ionFinder` and `envoMatch` installed is available on [dockerhub](https://hub.docker.com/repository/docker/mauraisa/ionfinder). 
+
+To create a copy of the examples included in this repository in your current working directory run:
+```
+docker run --it --rm -v $(pwd):/data mauraisa/ionFinder:latest copyExamples
+```
+
+```
+docker run --it --rm -v $(pwd):/data mauraisa/ionFinder:latest ionFinder 
+```
+
 # Configuring and building ionFinder
+
+Instead of using the Docker image, you can also build ionFinder on your own machine.
 
 ## System requirements
 `ionFinder` in written in c++ 11 and be compiled on Linux or macOS. Windows is not supported. Additional helper scripts are written in Python 3.
