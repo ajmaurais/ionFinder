@@ -70,10 +70,10 @@ def main():
                         help = 'Should jobs be submitted? If this flag is not supplied, program will be a dry run. '
                                'Required system resources will be printed but jobs will not be submitted.')
 
-    parser.add_argument('--jobType', choices=['pbs', 'lsf'], default='pbs',
-                        help='Job type. Default is "pbs"')
+    parser.add_argument('--jobType', choices=['pbs', 'lsf'], default='lsf',
+                        help='Job type. Default is "lsf"')
 
-    parser.add_argument('--shell', default='tcsh', help='The shell to use in job files')
+    parser.add_argument('--shell', default='bash', help='The shell to use in job files')
 
     parser.add_argument('-n', '--nJob', type=int, default = 1,
                         help='Specify number of jobs to split into.')
@@ -84,7 +84,7 @@ def main():
     parser.add_argument('-p', '--ppn', default=4, type=int,
                         help='Number of processors to allocate per job. Default is 4.')
 
-    parser.add_argument('-w', '--walltime', default='12:00:00',
+    parser.add_argument('-w', '--walltime', default='4:00:00',
                         help = 'Walltime per job in the format hh:mm:ss. Default is 4:00:00.')
 
     args = parser.parse_args()
