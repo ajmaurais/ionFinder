@@ -29,7 +29,6 @@
 #define tsv_hpp
 
 #include <inputFiles/dtafilter.hpp>
-#include <ionFinder/params.hpp>
 #include <scanData.hpp>
 #include <utils.hpp>
 #include <tsvFile.hpp>

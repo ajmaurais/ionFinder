@@ -43,6 +43,20 @@ unsigned int IonFinder::Params::computeThreads()
     return ret;
 }
 
+IonFinder::Params::InputFileType IonFinder::Params::strToInputFileType(std::string s) {
+    if(s == IonFinder::DTAFILTER_INPUT_STR) return InputFileType::DTAFILTER;
+    if(s == IonFinder::TSV_INPUT_STR) return InputFileType::TSV;
+    if(s == IonFinder::MZ_IDENT_ML_STR) return InputFileType::MZ_IDENT_ML;
+    throw std::invalid_argument("'" + s + "' is not a valid InputFileType!");
+}
+
+std::string IonFinder::Params::inputFileTypeToStr(IonFinder::Params::InputFileType it) {
+    if(it == InputFileType::DTAFILTER) return IonFinder::DTAFILTER_INPUT_STR;
+    if(it == InputFileType::TSV) return IonFinder::TSV_INPUT_STR;
+    if(it == InputFileType::MZ_IDENT_ML) return IonFinder::MZ_IDENT_ML_STR;
+    throw std::runtime_error("No string conversion for InputFileType!");
+}
+
 /**
  Parses command line arguments and stores in Params object
  \pre current working directory exists
@@ -82,17 +96,17 @@ bool IonFinder::Params::getArgs(int argc, const char* const argv[])
         }
         if(!strcmp(argv[i], "-i") || !strcmp(argv[i], "--inputMode"))
         {
-            if(!utils::isArg(argv[++i]))
-            {
+            if(!utils::isArg(argv[++i])) {
                 usage(IonFinder::ARG_REQUIRED_STR + argv[i-1]);
                 return false;
             }
-            if(!(!strcmp(argv[i], DTAFILTER_INPUT_STR.c_str()) || !strcmp(argv[i], TSV_INPUT_STR.c_str())))
-            {
-                std::cerr << argv[i] << base::PARAM_ERROR_MESSAGE << argv[i-1] << std::endl;
+            try {
+                _inputMode = strToInputFileType(argv[i]);
+            }
+            catch (const std::invalid_argument& e) {
+                std::cerr << e.what() << NEW_LINE;
                 return false;
             }
-            _inputMode = argv[i];
             continue;
         }
         if(!strcmp(argv[i], "-o") || !strcmp(argv[i], "--ofname"))
@@ -529,22 +543,22 @@ bool IonFinder::Params::getArgs(int argc, const char* const argv[])
     //fix options
     if(_wd[_wd.length() - 1] != '/')
         _wd += "/";
-    if(_inputMode == DTAFILTER_INPUT_STR){
+    if(_inputMode == InputFileType::DTAFILTER){
         if(!getFlist(force)){
             std::cerr << "Could not find DTAFilter-files!" << NEW_LINE;
             return false;
         }
     }
-    else if(_inputMode == TSV_INPUT_STR) {
-        if(_inDirs.size() == 0) {
-            std::cerr << "ERROR: Input file name is required when using tsv input mode!\n";
+    else if(_inputMode == InputFileType::TSV || _inputMode == InputFileType::MZ_IDENT_ML) {
+        if(_inDirs.empty()) {
+            std::cerr << "ERROR: Input file name is required when using " + inputFileTypeToStr(_inputMode) + " input mode!\n";
             usage();
             return false;
         }
     }
 
     return true;
-}//end of getArgs
+} // end of getArgs
 
 /**
  Searches all directories in _inDirs for DTAFilter files.
@@ -577,7 +591,7 @@ bool IonFinder::Params::getFlist(bool force)
  * Print program version and git repo info to stream.
  * \param out Stream to print to.
  */
-void IonFinder::Params::printVersion(std::ostream& out) const{
+void IonFinder::Params::printVersion(std::ostream& out) {
     out << "ionFinder v" << PROG_VERSION_MAJOR << "."
         << PROG_VERSION_MINOR << "."
         << PROG_VERSION_PATCH << NEW_LINE;

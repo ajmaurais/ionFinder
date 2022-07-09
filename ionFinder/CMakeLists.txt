@@ -44,6 +44,7 @@ add_executable(${ION_FINDER_TARGET}
         src/inputFiles/inputFiles.cpp
         src/ionFinder/datProc.cpp
         src/inputFiles/tsv.cpp
+        src/inputFiles/mzIdentML.cpp
         src/ionFinder/params.cpp
 		src/msInterface.cpp)
 

@@ -50,8 +50,8 @@ namespace inputFiles {
 	    DtaFilterFile() = default;
 
         bool readFilterFile(const std::string& fname, const std::string& sampleName,
-                                   std::vector<inputFiles::Scan>& scans,
-                                   bool skipReverse = false, ModFilter modFilter = ModFilter::ALL) const;
+                            std::vector<inputFiles::Scan>& scans,
+                            bool skipReverse = false, ModFilter modFilter = ModFilter::ALL) const;
 
         static void initilizeFromLine(std::string line, Scan &scan);
     };

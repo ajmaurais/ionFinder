@@ -44,33 +44,39 @@ namespace IonFinder{
 	//program file locations
 	std::string const PROG_USAGE_FNAME = base::PROG_MAN + "/ionFinder/usage.txt";
 	std::string const PROG_HELP_FILE = base::PROG_MAN + "/ionFinder/helpFile.roff";
+    std::string const ARG_REQUIRED_STR = "Additional argument required for: ";
+
+    // TODO: Everything in this group should probably be in an auto generated header
 	std::string const DEFAULT_FILTER_FILE_NAME = "DTASelect-filter.txt";
 	std::string const PEPTIDE_MOD_STATS_OFNAME = "peptide_mod_stats.tsv";
 	std::string const PEPTIDE_CIT_STATS_OFNAME = "peptide_cit_stats.tsv";
 	std::string const DTAFILTER_INPUT_STR = "dtafilter";
 	std::string const TSV_INPUT_STR = "tsv";
-	std::string const ARG_REQUIRED_STR = "Additional argument required for: ";
+	std::string const MZ_IDENT_ML_STR = "mzid";
 
+    double const CIT_NL_MASS = 43.0058;
+    double const DEFAULT_NEUTRAL_LOSS_MASS = CIT_NL_MASS;
+    double const CIT_MOD_MASS = 0.984289;
     //!default residues which are isobaric with a modification
     std::string const DEFAULT_AMBIGIOUS_RESIDUES = "";
 	std::string const CIT_AMB_RESIDUES = "NQ";
-
-	double const CIT_NL_MASS = 43.0058;
-	double const DEFAULT_NEUTRAL_LOSS_MASS = CIT_NL_MASS;
-	double const CIT_MOD_MASS = 0.984289;
 
 	class Params;
 	
 	class Params : public base::ParamsBase{
 	public:
 		typedef std::map<std::string, std::string> FilterFilesType;
-		
-	private:
+
+        enum class InputFileType {DTAFILTER, TSV, MZ_IDENT_ML};
+        static InputFileType strToInputFileType(std::string);
+        static std::string inputFileTypeToStr(InputFileType);
+
+    private:
 		std::string _parentDir;
 		//!Contains all filter files to be read
 		FilterFilesType _filterFiles;
 		//!how will peptides to be searched for be supplied?
-		std::string _inputMode;
+		InputFileType _inputMode;
 		//!Default name of DTAFilter filter file to search for
 		std::string _dtaFilterBase;
 		//! mass of neutral loss to search for
@@ -130,7 +136,7 @@ namespace IonFinder{
 		Params() : ParamsBase(PROG_USAGE_FNAME, PROG_HELP_FILE){
 			_parentDir = "";
 			_fastaFile = "";
-			_inputMode = DTAFILTER_INPUT_STR;
+			_inputMode = InputFileType::DTAFILTER;
 			_includeReverse = false;
 			_modFilter = inputFiles::ModFilter::ALL;
 			_printSpectraFiles = false;
@@ -155,7 +161,7 @@ namespace IonFinder{
 		bool getArgs(int, const char* const[]) override;
 		
 		//properties
-        void printVersion(std::ostream& = std::cout) const;
+        static void printVersion(std::ostream& = std::cout) ;
 		const FilterFilesType& getFilterFiles() const{
 			return _filterFiles;
 		}
@@ -177,7 +183,7 @@ namespace IonFinder{
 		double getNeutralLossMass() const{
 			return _neutralLossMass;
 		}
-		std::string getInputMode() const{
+		InputFileType getInputMode() const{
 			return _inputMode;
 		}
 		std::string getAmbigiousResidues() const{

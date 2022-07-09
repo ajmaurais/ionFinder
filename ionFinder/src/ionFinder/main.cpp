@@ -37,7 +37,7 @@ int main(int argc, const char** argv)
 
 	//read input files
 	std::vector<inputFiles::Scan> scans;
-	if(pars.getInputMode() == IonFinder::DTAFILTER_INPUT_STR)
+	if(pars.getInputMode() == IonFinder::Params::InputFileType::DTAFILTER)
 	{
 		std::cout << "\nReading DTAFilter-files...";
 		if(!inputFiles::readFilterFiles(pars.getFilterFiles(), scans, !pars.getIncludeReverse(), pars.getModFilter()))
@@ -48,7 +48,7 @@ int main(int argc, const char** argv)
 		else std::cout << "Done!\n";
 	}
 	else{
-		assert(pars.getInputMode() == IonFinder::TSV_INPUT_STR);
+		assert(pars.getInputMode() == IonFinder::Params::InputFileType::TSV);
 		std::cout << "\nReading input .tsv files...";
 		for(const auto& file: pars.getInputDirs())
 		{

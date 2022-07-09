@@ -65,7 +65,7 @@ inputFiles::ModFilter inputFiles::intToModFilter(int i){
  */
 inputFiles::Scan::MatchDirection inputFiles::Scan::strToMatchDirection(std::string str)
 {
-    if(utils::strContains(REVERSE_MATCH, utils::toLower(std::move(str))))
+    if(utils::strContains(REVERSE_MATCH, utils::toLower(str)))
         return inputFiles::Scan::MatchDirection::REVERSE;
     return inputFiles::Scan::MatchDirection::FORWARD;
 }

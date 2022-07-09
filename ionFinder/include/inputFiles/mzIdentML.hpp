@@ -1,9 +1,9 @@
 //
-// main.hpp
+// mzIdentML.hpp
 // ionFinder
 // -----------------------------------------------------------------------------
 // MIT License
-// Copyright 2020 Aaron Maurais
+// Copyright 2022 Aaron Maurais
 // -----------------------------------------------------------------------------
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -24,16 +24,25 @@
 // DEALINGS IN THE SOFTWARE.
 // -----------------------------------------------------------------------------
 //
-#ifndef main_hpp
-#define main_hpp
 
-#include <ionFinder/ionFinder.hpp>
-#include <ionFinder/params.hpp>
-#include <inputFiles/dtafilter.hpp>
-#include <inputFiles/tsv.hpp>
-#include <inputFiles/mzIdentML.hpp>
-#include <ionFinder/datProc.hpp>
+#ifndef mzIdentML_hpp
+#define mzIdentML_hpp
 
-#include <peptide.hpp>
+#include <inputFiles/inputFiles.hpp>
 
-#endif /* main_hpp */
+#include <thirdparty/rapidxml/rapidxml.hpp>
+
+namespace inputFiles {
+
+    class MzIdentML {
+
+    public:
+        MzIdentML() = default;
+
+        bool read(const std::string& fname, std::vector<inputFiles::Scan>& scans,
+                  bool skipReverse = false, ModFilter modFilter = ModFilter::ALL) const;
+    };
+
+}
+
+#endif
