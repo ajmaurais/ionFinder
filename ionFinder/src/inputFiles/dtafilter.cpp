@@ -25,8 +25,7 @@
 // -----------------------------------------------------------------------------
 //
 
-#include <dtafilter.hpp>
-#include <utility>
+#include <inputFiles/dtafilter.hpp>
 
 Dtafilter::Scan& Dtafilter::Scan::operator = (const Dtafilter::Scan& rhs)
 {

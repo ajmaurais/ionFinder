@@ -25,7 +25,7 @@
 // -----------------------------------------------------------------------------
 //
 
-#include <ionFinder/inputFiles.hpp>
+#include <inputFiles/tsv.hpp>
 
 /**
  Read list of filter files supplied by \p params

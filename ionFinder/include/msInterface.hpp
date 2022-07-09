@@ -34,7 +34,7 @@
 #include <memory>
 #include <mutex>
 
-#include <dtafilter.hpp>
+#include <inputFiles/dtafilter.hpp>
 #include <msInterface/msInterface.hpp>
 #include <msInterface/msScan.hpp>
 #include <msInterface/ms2File.hpp>

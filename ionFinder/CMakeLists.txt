@@ -37,12 +37,12 @@ add_executable(${ION_FINDER_TARGET}
         src/calcLableLocs.cpp
         src/aaDB.cpp
         src/sequestParams.cpp
-        src/dtafilter.cpp
+        src/inputFiles/dtafilter.cpp
         src/paramsBase.cpp
         src/peptide.cpp
         src/ms2Spectrum.cpp
         src/ionFinder/datProc.cpp
-        src/ionFinder/inputFiles.cpp
+        src/inputFiles/tsv.cpp
         src/ionFinder/params.cpp
 		src/msInterface.cpp)
 

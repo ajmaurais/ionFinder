@@ -45,7 +45,7 @@
 #include <constants.hpp>
 #include <ionFinder/ionFinder.hpp>
 #include <ionFinder/params.hpp>
-#include <dtafilter.hpp>
+#include <inputFiles/dtafilter.hpp>
 #include <fastaFile.hpp>
 #include <peptide.hpp>
 #include <scanData.hpp>

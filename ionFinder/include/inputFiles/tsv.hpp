@@ -28,12 +28,14 @@
 #ifndef inputFiles_hpp
 #define inputFiles_hpp
 
-#include <dtafilter.hpp>
+#include <inputFiles/dtafilter.hpp>
 #include <ionFinder/params.hpp>
 #include <scanData.hpp>
 #include <utils.hpp>
 #include <tsvFile.hpp>
 #include <tsv_constants.hpp>
+
+#include <thirdparty/rapidxml/rapidxml.hpp>
 
 namespace Dtafilter{
 	bool readFilterFiles(const IonFinder::Params&, std::vector<Dtafilter::Scan>&);
