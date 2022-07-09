@@ -27,54 +27,44 @@
 
 #include <inputFiles/dtafilter.hpp>
 
-Dtafilter::Scan& Dtafilter::Scan::operator = (const Dtafilter::Scan& rhs)
+bool inputFiles::DtaFilterFile::parse_matchDir_ID_Protein(const std::string& str, inputFiles::Scan& scan)
 {
-	scanData::Scan::operator=(rhs);
-    _parentProtein = rhs._parentProtein;
-	_parentID = rhs._parentID;
-	_parentDescription = rhs._parentDescription;
-	_matchDirection = rhs._matchDirection;
-	_sampleName = rhs._sampleName;
-	_unique = rhs._unique;
+    std::vector<std::string> elems;
+    utils::split(str, '|', elems);
 
-	return *this;
+    try{
+        scan.setMatchDirection(inputFiles::Scan::strToMatchDirection(elems.at(0)));
+        scan.setParentID(elems.at(1));
+
+        size_t underScoreI = elems.at(2).find_last_of('_');
+        scan.setParentProtein(elems.at(2).substr(0, underScoreI));
+    }
+    catch(std::out_of_range& e){
+        std::cerr << "\n Error parsing protein id for " << str <<"\n Skipping...\n";
+        return false;
+    }
+
+    if(scan.getMatchDirection() == inputFiles::Scan::MatchDirection::REVERSE)
+        scan.setParentID("reverse_" + scan.getParentID());
+    return true;
 }
 
-/**
- \brief Get protein match direction. <br>
- 
- Match direction is determined by checking  if \p str contains Dtafilter::REVERSE_MATCH.
- \param str \p db tag from fasta header line.
- See https://www.uniprot.org/help/fasta-headers for detials on fasta headers.
- \return match direction for fasta entry
- */
-Dtafilter::Scan::MatchDirection Dtafilter::Scan::strToMatchDirection(std::string str)
+void inputFiles::DtaFilterFile::initilizeFromLine(std::string line, inputFiles::Scan& scan)
 {
-	if(utils::strContains(REVERSE_MATCH, utils::toLower(std::move(str))))
-		return MatchDirection::REVERSE;
-	return MatchDirection::FORWARD;
-}
+    std::vector<std::string> elems;
+    utils::split(line, IN_DELIM, elems);
+    scan.setFullSequence(elems[12]);
+    scan.setSequence(inputFiles::Scan::makeSequenceFromFullSequence(scan.getFullSequence()));
+    scan.setModified(utils::strContains(scanData::MOD_CHAR, scan.getSequence()));
+    scan.setXcorr(elems[2]);
+    scan.setSpectralCounts(std::stoi(elems[11]));
 
-bool Dtafilter::Scan::parse_matchDir_ID_Protein(const std::string& str)
-{
-	std::vector<std::string> elems;
-	utils::split(str, '|', elems);
-	
-	try{
-		_matchDirection = strToMatchDirection(elems.at(0));
-		_parentID = elems.at(1);
-		
-		size_t underScoreI = elems.at(2).find_last_of('_');
-		_parentProtein = elems.at(2).substr(0, underScoreI);
-	}
-	catch(std::out_of_range& e){
-		std::cerr << "\n Error parsing protein id for " << str <<"\n Skipping...\n";
-		return false;
-	}
-	
-	if(_matchDirection == MatchDirection::REVERSE)
-		_parentID = "reverse_" + _parentID;
-	return true;
+    std::string scanLine = elems[1];
+    utils::split(scanLine, '.', elems);
+
+    scan.getPrecursor().setFile(elems[0] + ".ms2");
+    scan.setScanNum(std::stoi(elems[1]));
+    scan.getPrecursor().setCharge(std::stoi(elems[3]));
 }
 
 /**
@@ -89,11 +79,11 @@ bool Dtafilter::Scan::parse_matchDir_ID_Protein(const std::string& str)
  
  \return true if file I/O was successful.
  */
-bool Dtafilter::readFilterFile(const std::string& fname,
-							   const std::string& sampleName,
-							   std::vector<Dtafilter::Scan>& scans,
-							   bool skipReverse,
-							   int modFilter)
+bool inputFiles::DtaFilterFile::readFilterFile(const std::string& fname,
+                                               const std::string& sampleName,
+							                   std::vector<inputFiles::Scan>& scans,
+							                   bool skipReverse,
+							                   ModFilter modFilter) const
 {
 	std::ifstream inF(fname);
 	if(!inF) return false;
@@ -125,7 +115,7 @@ bool Dtafilter::readFilterFile(const std::string& fname,
 				utils::split(line, IN_DELIM, elems);
 				
 				Scan baseScan;
-				baseScan.parse_matchDir_ID_Protein(elems[0]);
+				parse_matchDir_ID_Protein(elems[0], baseScan);
 				baseScan.setSampleName(sampleName);
 				
 				//extract shortened protein name and description
@@ -145,17 +135,17 @@ bool Dtafilter::readFilterFile(const std::string& fname,
 						break;
 					
 					Scan newScan = baseScan;
-					newScan.initilizeFromLine(line);
+					DtaFilterFile::initilizeFromLine(line, newScan);
 					newScan.setUnique(line[0] == '*');
 					newScan.getPrecursor().setFile(utils::dirName(fname) + "/" + newScan.getPrecursor().getFile());
 					
 					//reverse match filter
-					if(skipReverse && newScan.getMatchDirection() == Dtafilter::Scan::MatchDirection::REVERSE)
+					if(skipReverse && newScan.getMatchDirection() == inputFiles::Scan::MatchDirection::REVERSE)
 						continue;
 					
 					//mod filter
-					if((modFilter == 0 && !newScan.isModified()) ||
-					   (modFilter == 2 && newScan.isModified()))
+					if((modFilter == ModFilter::ONLY_MODIFIED && !newScan.isModified()) ||
+					   (modFilter == ModFilter::EXCLUDE_MODIFIED && newScan.isModified()))
 						continue;
 					
 					scans.push_back(newScan);
@@ -168,3 +158,26 @@ bool Dtafilter::readFilterFile(const std::string& fname,
 	
 	return true;
 }
+
+/**
+ * Read list of filter files supplied by \p params
+ * \param filterFiles
+ * \param scans empty list of scans to fill
+ * \param skipReverse skip decoy matches?
+ * \param modFilter
+ * \return true if all files were successfully read.
+ */
+bool inputFiles::readFilterFiles(const std::map<std::string, std::string>& filterFiles,
+                                 std::vector<inputFiles::Scan>& scans,
+                                 bool skipReverse,
+                                 ModFilter modFilter)
+{
+    for(auto & filterFile : filterFiles)
+    {
+        if(!inputFiles::DtaFilterFile().readFilterFile(filterFile.second, filterFile.first, scans, skipReverse, modFilter))
+            return false;
+    }
+
+    return true;
+}
+

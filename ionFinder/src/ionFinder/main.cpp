@@ -36,11 +36,11 @@ int main(int argc, const char** argv)
 	pars.printVersion(std::cout);
 
 	//read input files
-	std::vector<Dtafilter::Scan> scans;
+	std::vector<inputFiles::Scan> scans;
 	if(pars.getInputMode() == IonFinder::DTAFILTER_INPUT_STR)
 	{
 		std::cout << "\nReading DTAFilter-files...";
-		if(!Dtafilter::readFilterFiles(pars, scans))
+		if(!inputFiles::readFilterFiles(pars.getFilterFiles(), scans, !pars.getIncludeReverse(), pars.getModFilter()))
 		{
 			std::cerr << "Failed to read DTASelect-filter files!" << NEW_LINE;
 			return 1;
@@ -50,9 +50,9 @@ int main(int argc, const char** argv)
 	else{
 		assert(pars.getInputMode() == IonFinder::TSV_INPUT_STR);
 		std::cout << "\nReading input .tsv files...";
-		for(auto file: pars.getInputDirs())
+		for(const auto& file: pars.getInputDirs())
 		{
-            if(!IonFinder::readInputTsv(file,scans, !pars.getIncludeReverse(), pars.getModFilter())) {
+            if(!inputFiles::readInputTsv(file, scans, !pars.getIncludeReverse(), pars.getModFilter())) {
                 std::cerr << "Failed to read input .tsv files!" << NEW_LINE;
                 return 1;
             }

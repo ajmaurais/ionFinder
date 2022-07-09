@@ -42,10 +42,10 @@ bool scanData::Scan::checkIsModified() const {
     return utils::strContains(scanData::MOD_CHAR, _sequence);
 }
 
-std::string scanData::Scan::makeSequenceFromFullSequence(std::string fs) const
+std::string scanData::Scan::makeSequenceFromFullSequence(std::string fs)
 {
-	fs = fs.substr(fs.find(".") + 1);
-	fs = fs.substr(0, fs.find_last_of("."));
+	fs = fs.substr(fs.find('.') + 1);
+	fs = fs.substr(0, fs.find_last_of('.'));
 	return fs;
 }
 
@@ -103,47 +103,29 @@ std::string scanData::removeDynamicMod(std::string s, bool lowercase)
 	if(!utils::strContains(scanData::MOD_CHAR, s))
 		return s;
 	
-	std::string ret = "";
-	for(size_t i = 0; i < s.length(); i++)
+	std::string ret;
+	for(char i : s)
 	{
-		if(s[i] == scanData::MOD_CHAR){
+		if(i == scanData::MOD_CHAR){
 			if(lowercase)
 				ret[ret.length() - 1] = std::tolower(ret.back());
 		}
-		else ret += s[i];
+		else ret += i;
 	}
 	
 	return ret;
 }
 
-std::string scanData::Scan::makeOfSequenceFromSequence(std::string s) const{
+std::string scanData::Scan::makeOfSequenceFromSequence(std::string s) {
 	s = removeStaticMod(s);
 	s = removeDynamicMod(s);
 	return s;
 }
 
-void scanData::Scan::initilizeFromLine(std::string line)
-{
-	std::vector<std::string> elems;
-	utils::split(line, IN_DELIM, elems);
-	_fullSequence = elems[12];
-	_sequence = makeSequenceFromFullSequence(_fullSequence);
-	_modified = utils::strContains(MOD_CHAR, _sequence);
-	_xcorr = elems[2];
-	_spectralCounts = std::stoi(elems[11]);
-	
-	std::string scanLine = elems[1];
-	utils::split(scanLine, '.', elems);
-	
-	_precursor.setFile(elems[0] + ".ms2");
-	_scanNum = std::stoi(elems[1]);
-	_precursor.setCharge(std::stoi(elems[3]));
-}
-
 /**
  \brief Get unique output file name without extension.
  */
-std::string scanData::Scan::getOfNameBase(std::string parentFile, std::string seq) const
+std::string scanData::Scan::getOfNameBase(const std::string& parentFile, const std::string& seq) const
 {
 	std::string ret;
 	ret = utils::removeExtension(parentFile);

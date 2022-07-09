@@ -41,7 +41,7 @@ IonFinder::PeptideStats::PeptideStats(const IonFinder::PeptideStats& rhs) {
     charge = rhs.charge;
     fullSequence = rhs.fullSequence;
     mass = rhs.mass;
-    _scan = new Dtafilter::Scan;
+    _scan = new inputFiles::Scan;
     _scan = rhs._scan;
 }
 
@@ -286,7 +286,7 @@ double IonFinder::PeptideStats::calcIntCO(double fractionArtifact) const
  * \param peptideStats Empty vector of peptideStats.
  * \param pars Populated Params object.
  */
-bool IonFinder::analyzeSequences(std::vector<Dtafilter::Scan>& scans,
+bool IonFinder::analyzeSequences(std::vector<inputFiles::Scan>& scans,
 								 const std::vector<PeptideNamespace::Peptide>& peptides,
 								 std::vector<PeptideStats>& peptideStats,
 								 const IonFinder::Params& pars)
@@ -416,7 +416,7 @@ bool IonFinder::printFragmentIntensities(const std::vector<PeptideStats>& stats,
  \param pars Params object for information on how to perform analysis
  \return true is all file I/O was successful.
  */
-bool IonFinder::findFragmentsParallel(std::vector<Dtafilter::Scan>& scans,
+bool IonFinder::findFragmentsParallel(std::vector<inputFiles::Scan>& scans,
 									  std::vector<PeptideNamespace::Peptide>& peptides,
 									  const IonFinder::Params& pars)
 {
@@ -529,7 +529,7 @@ void IonFinder::findFragmentsProgress(std::atomic<size_t>& scansIndex, size_t co
  \param pars IonFinder params object.
  \return true if successful
  */
-bool IonFinder::findFragments(std::vector<Dtafilter::Scan>& scans,
+bool IonFinder::findFragments(std::vector<inputFiles::Scan>& scans,
 							  std::vector<PeptideNamespace::Peptide>& peptides,
 							  IonFinder::Params& pars)
 {
@@ -545,7 +545,7 @@ bool IonFinder::findFragments(std::vector<Dtafilter::Scan>& scans,
 }
 
 
-void IonFinder::findFragments_(std::vector<Dtafilter::Scan>& scans,
+void IonFinder::findFragments_(std::vector<inputFiles::Scan>& scans,
                                const size_t beg, const size_t end,
                                std::vector<PeptideNamespace::Peptide>& peptides,
                                const IonFinder::Params& pars,
@@ -569,7 +569,7 @@ void IonFinder::findFragments_(std::vector<Dtafilter::Scan>& scans,
  \param pars IonFinder params object.
  \param success set to true if function was successful
  */
-void IonFinder::findFragments_threadSafe(std::vector<Dtafilter::Scan>& scans,
+void IonFinder::findFragments_threadSafe(std::vector<inputFiles::Scan>& scans,
 										 const size_t beg, const size_t end,
                                          ms2::MsInterface& msInterface,
 										 std::vector<PeptideNamespace::Peptide>& peptides,

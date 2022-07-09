@@ -41,6 +41,7 @@ add_executable(${ION_FINDER_TARGET}
         src/paramsBase.cpp
         src/peptide.cpp
         src/ms2Spectrum.cpp
+        src/inputFiles/inputFiles.cpp
         src/ionFinder/datProc.cpp
         src/inputFiles/tsv.cpp
         src/ionFinder/params.cpp

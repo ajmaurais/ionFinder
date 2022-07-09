@@ -1,5 +1,5 @@
 //
-// inputFiles.cpp
+// tsv.cpp
 // ionFinder
 // -----------------------------------------------------------------------------
 // MIT License
@@ -26,26 +26,6 @@
 //
 
 #include <inputFiles/tsv.hpp>
-
-/**
- Read list of filter files supplied by \p params
- \param params initialized Params object
- \param scans empty list of scans to fill
- \returns true if all files were successfully read.
- */
-bool Dtafilter::readFilterFiles(const IonFinder::Params& params,
-								std::vector<Dtafilter::Scan>& scans)
-{
-	auto endIt = params.getFilterFiles().end();
-	for(auto it = params.getFilterFiles().begin(); it != endIt; ++it)
-	{
-		if(!Dtafilter::readFilterFile(it->second, it->first, scans,
-									  !params.getIncludeReverse(), params.getModFilter()))
-			return false;
-	}
-	
-	return true;
-}
 
 /*
  sampleName
@@ -75,14 +55,14 @@ bool Dtafilter::readFilterFiles(const IonFinder::Params& params,
  
  \returns true if all files were successfully read.
  */
-bool IonFinder::readInputTsv(const std::string& ifname,
-							 std::vector<Dtafilter::Scan>& scans,
-							 bool skipReverse, int modFilter)
+bool inputFiles::readInputTsv(const std::string& ifname,
+							 std::vector<inputFiles::Scan>& scans,
+							 bool skipReverse, inputFiles::ModFilter modFilter)
 {
 	utils::TsvFile tsv(ifname);
 	if(!tsv.read()) return false;
 	
-	//iterate through columns to make sure all required cols exist
+	// iterate through columns to make sure all required cols exist
 	for(const auto & i : TSV_INPUT_REQUIRED_COLNAMES) {
 		if(!tsv.colExists(i))
 		{
@@ -92,7 +72,7 @@ bool IonFinder::readInputTsv(const std::string& ifname,
 		}
 	}
 	
-	//itterate through columns and search for optional columns
+	// iterate through columns and search for optional columns
 	std::map<std::string, bool> foundOptionalCols;
 	for(int i = 0; i < TSV_INPUT_OPTIONAL_COLNAMES_LEN; i++)
 	{
@@ -104,47 +84,47 @@ bool IonFinder::readInputTsv(const std::string& ifname,
 	size_t nRow = tsv.getNrow();
 	for(size_t i = 0; i < nRow; i++)
 	{
-		Dtafilter::Scan temp;
-		temp.setMatchDirection(Dtafilter::Scan::MatchDirection::FORWARD);
+		inputFiles::Scan temp;
+		temp.setMatchDirection(inputFiles::Scan::MatchDirection::FORWARD);
 
 		//required columns
-		temp.setScanNum(tsv.getValSize(i, IonFinder::SCAN_NUM));
-		temp.setSequence(tsv.getValStr(i, IonFinder::SEQUENCE));
+		temp.setScanNum(tsv.getValSize(i, inputFiles::SCAN_NUM));
+		temp.setSequence(tsv.getValStr(i, inputFiles::SEQUENCE));
         temp.setIsModified(temp.checkIsModified());
-		temp.getPrecursor().setFile(tsv.getValStr(i, IonFinder::PRECURSOR_FILE));
-		temp.setSampleName(tsv.getValStr(i, IonFinder::SAMPLE_NAME));
+		temp.getPrecursor().setFile(tsv.getValStr(i, inputFiles::PRECURSOR_FILE));
+		temp.setSampleName(tsv.getValStr(i, inputFiles::SAMPLE_NAME));
 
 		//add optional columns which were found.
-		if(foundOptionalCols[IonFinder::PARENT_ID])
-			temp.setParentID(tsv.getValStr(i, IonFinder::PARENT_ID));
-		if(foundOptionalCols[IonFinder::PARENT_PROTEIN])
-			temp.setParentProtein(tsv.getValStr(i, IonFinder::PARENT_PROTEIN));
-		if(foundOptionalCols[IonFinder::PARENT_DESCRIPTION])
-			temp.setParentDescription(tsv.getValStr(i, IonFinder::PARENT_DESCRIPTION));
-		if(foundOptionalCols[IonFinder::MATCH_DIRECTION])
-			temp.setMatchDirection(Dtafilter::Scan::strToMatchDirection(tsv.getValStr(i, IonFinder::MATCH_DIRECTION)));
-        if(foundOptionalCols[IonFinder::FORMULA])
-            temp.setFormula(tsv.getValStr(i, IonFinder::FORMULA));
-		if(foundOptionalCols[IonFinder::FULL_SEQUENCE])
-			temp.setFullSequence(tsv.getValStr(i, IonFinder::FULL_SEQUENCE));
-		if(foundOptionalCols[IonFinder::UNIQUE])
-			temp.setUnique(tsv.getValBool(i, IonFinder::UNIQUE));
-		if(foundOptionalCols[IonFinder::CHARGE])
-			temp.getPrecursor().setCharge(tsv.getValInt(i, IonFinder::CHARGE));
-		if(foundOptionalCols[IonFinder::SCORE])
-			temp.setXcorr(tsv.getValStr(i, IonFinder::SCORE));
-		if(foundOptionalCols[IonFinder::PRECURSOR_MZ])
-			temp.getPrecursor().setMZ(tsv.getValStr(i, IonFinder::PRECURSOR_MZ));
-		if(foundOptionalCols[IonFinder::PRECURSOR_SCAN])
-            temp.getPrecursor().setScan(tsv.getValStr(i, IonFinder::PRECURSOR_SCAN));
+		if(foundOptionalCols[inputFiles::PARENT_ID])
+			temp.setParentID(tsv.getValStr(i, inputFiles::PARENT_ID));
+		if(foundOptionalCols[inputFiles::PARENT_PROTEIN])
+			temp.setParentProtein(tsv.getValStr(i, inputFiles::PARENT_PROTEIN));
+		if(foundOptionalCols[inputFiles::PARENT_DESCRIPTION])
+			temp.setParentDescription(tsv.getValStr(i, inputFiles::PARENT_DESCRIPTION));
+		if(foundOptionalCols[inputFiles::MATCH_DIRECTION])
+			temp.setMatchDirection(inputFiles::Scan::strToMatchDirection(tsv.getValStr(i, inputFiles::MATCH_DIRECTION)));
+        if(foundOptionalCols[inputFiles::FORMULA])
+            temp.setFormula(tsv.getValStr(i, inputFiles::FORMULA));
+		if(foundOptionalCols[inputFiles::FULL_SEQUENCE])
+			temp.setFullSequence(tsv.getValStr(i, inputFiles::FULL_SEQUENCE));
+		if(foundOptionalCols[inputFiles::UNIQUE])
+			temp.setUnique(tsv.getValBool(i, inputFiles::UNIQUE));
+		if(foundOptionalCols[inputFiles::CHARGE])
+			temp.getPrecursor().setCharge(tsv.getValInt(i, inputFiles::CHARGE));
+		if(foundOptionalCols[inputFiles::SCORE])
+			temp.setXcorr(tsv.getValStr(i, inputFiles::SCORE));
+		if(foundOptionalCols[inputFiles::PRECURSOR_MZ])
+			temp.getPrecursor().setMZ(tsv.getValStr(i, inputFiles::PRECURSOR_MZ));
+		if(foundOptionalCols[inputFiles::PRECURSOR_SCAN])
+            temp.getPrecursor().setScan(tsv.getValStr(i, inputFiles::PRECURSOR_SCAN));
 		
 		//reverse match filter
-		if(skipReverse && temp.getMatchDirection() == Dtafilter::Scan::MatchDirection::REVERSE)
+		if(skipReverse && temp.getMatchDirection() == inputFiles::Scan::MatchDirection::REVERSE)
 			continue;
 		
 		//mod filter
-		if((modFilter == 0 && !temp.isModified()) ||
-		   (modFilter == 2 && temp.isModified()))
+		if((modFilter == inputFiles::ModFilter::ONLY_MODIFIED && !temp.isModified()) ||
+		   (modFilter == inputFiles::ModFilter::EXCLUDE_MODIFIED && temp.isModified()))
 			continue;
 		
 		scans.push_back(temp);

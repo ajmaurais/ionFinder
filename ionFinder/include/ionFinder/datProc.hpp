@@ -71,17 +71,17 @@ namespace IonFinder{
 	//!Progress bar width in chars
 	int const PROGRESS_BAR_WIDTH = 60;
 
-	bool findFragmentsParallel(std::vector<Dtafilter::Scan>&,
+	bool findFragmentsParallel(std::vector<inputFiles::Scan>&,
 							   std::vector<PeptideNamespace::Peptide>&,
 							   const IonFinder::Params&);
 
-    void findFragments_(std::vector<Dtafilter::Scan>& scans,
+    void findFragments_(std::vector<inputFiles::Scan>& scans,
                         size_t beg, size_t end,
                         std::vector<PeptideNamespace::Peptide>& peptides,
                         const IonFinder::Params& pars,
                         bool* success, std::atomic<size_t>& scansIndex);
 
-    void findFragments_threadSafe(std::vector<Dtafilter::Scan>& scans,
+    void findFragments_threadSafe(std::vector<inputFiles::Scan>& scans,
                                   size_t beg, size_t end,
                                   ms2::MsInterface& msInterface,
                                   std::vector<PeptideNamespace::Peptide>& peptides,
@@ -92,11 +92,11 @@ namespace IonFinder{
 							   const std::string& message,
 							   int sleepTime = PROGRESS_SLEEP_TIME);
 	
-	bool findFragments(std::vector<Dtafilter::Scan>& scans,
+	bool findFragments(std::vector<inputFiles::Scan>& scans,
 					   std::vector<PeptideNamespace::Peptide>& peptides,
 					   IonFinder::Params& pars);
 	
-	bool analyzeSequences(std::vector<Dtafilter::Scan>&,
+	bool analyzeSequences(std::vector<inputFiles::Scan>&,
 						  const std::vector<PeptideNamespace::Peptide>&,
 						  std::vector<PeptideStats>&,
 						  const IonFinder::Params&);
@@ -132,7 +132,7 @@ namespace IonFinder{
 
 	class PeptideStats{
 	public:
-		friend bool analyzeSequences(std::vector<Dtafilter::Scan>&,
+		friend bool analyzeSequences(std::vector<inputFiles::Scan>&,
 									 const std::vector<PeptideNamespace::Peptide>&,
 									 std::vector<PeptideStats>&,
 									 const IonFinder::Params&);
@@ -189,7 +189,7 @@ namespace IonFinder{
 		std::string modResidues;
 		
 		//!pointer to corresponding scan object
-		Dtafilter::Scan* _scan;
+		inputFiles::Scan* _scan;
 		
 		void initStats();
 		bool containsAmbResidues(const std::string& ambResidues, std::string fragSeq) const;
@@ -200,7 +200,7 @@ namespace IonFinder{
 	
 	public:		
 		PeptideStats(){
-			_scan = new Dtafilter::Scan;
+			_scan = new inputFiles::Scan;
 			initStats();
 			_fragDelim = FRAG_DELIM;
             containsCit = ContainsCitType::FALSE;
@@ -216,7 +216,7 @@ namespace IonFinder{
 		}
 		explicit PeptideStats(const PeptideNamespace::Peptide& p){
 			//PeptideStats data
-			_scan = new Dtafilter::Scan;
+			_scan = new inputFiles::Scan;
 			_fragDelim = FRAG_DELIM;
             containsCit = ContainsCitType::FALSE;
             thisContainsCit = ContainsCitType::FALSE;

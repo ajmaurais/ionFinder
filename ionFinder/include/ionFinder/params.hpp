@@ -34,6 +34,7 @@
 #include <vector>
 #include <thread>
 
+#include <inputFiles/inputFiles.hpp>
 #include <ionFinder/ionFinder.hpp>
 #include <paramsBase.hpp>
 #include <utils.hpp>
@@ -80,7 +81,7 @@ namespace IonFinder{
 		//! should reverse peptide matches be considered
 		bool _includeReverse;
 		//! Which modification statuses should be included in output?
-		int _modFilter;
+		inputFiles::ModFilter _modFilter;
 		//!Should annotaed spectra be printed?
 		bool _printSpectraFiles;
 		//!Should NL ions be search for?
@@ -131,7 +132,7 @@ namespace IonFinder{
 			_fastaFile = "";
 			_inputMode = DTAFILTER_INPUT_STR;
 			_includeReverse = false;
-			_modFilter = 1;
+			_modFilter = inputFiles::ModFilter::ALL;
 			_printSpectraFiles = false;
 			_calcNL = false;
             _artifactNLIntFrac = 0.01;
@@ -164,7 +165,7 @@ namespace IonFinder{
 		bool getIncludeReverse() const{
 			return _includeReverse;
 		}
-		int getModFilter() const{
+		inputFiles::ModFilter getModFilter() const{
 			return _modFilter;
 		}
 		bool getCalcNL() const{

@@ -58,10 +58,7 @@ namespace scanData{
 		int _spectralCounts;
 
         utils::msInterface::PrecursorScan _precursor;
-		
-		void initilizeFromLine(std::string);
-		std::string makeSequenceFromFullSequence(std::string) const;
-		std::string makeOfSequenceFromSequence(std::string) const;
+
 	public:
 		Scan(): _precursor(){
 			_scanNum = 0;
@@ -78,9 +75,6 @@ namespace scanData{
 			_precursor.setFile(parentFile);
 		}
 		
-		Scan(std::string line){
-			initilizeFromLine(std::move(line));
-		}
 		~Scan() = default;
 
         virtual void clear();
@@ -118,6 +112,9 @@ namespace scanData{
 		void setPrecursor(const utils::msInterface::PrecursorScan& rhs){
 			_precursor = rhs;
 		}
+		void setModified(bool modified){
+		    _modified = modified;
+		}
 
 		//properties
 		size_t getScanNum() const{
@@ -136,11 +133,12 @@ namespace scanData{
 			return _spectralCounts;
 		}
 		bool checkIsModified() const;
+
 		//!Does the peptide contain a dynamic modification?
 		bool isModified() const{
 			return _modified;
 		}
-		std::string getOfNameBase(std::string, std::string) const;
+		std::string getOfNameBase(const std::string&, const std::string&) const;
 		std::string getOfname() const;
         const utils::msInterface::PrecursorScan& getPrecursor() const{
             return _precursor;
@@ -148,7 +146,10 @@ namespace scanData{
         utils::msInterface::PrecursorScan& getPrecursor(){
             return _precursor;
         }
-	};
+
+        static std::string makeSequenceFromFullSequence(std::string);
+        static std::string makeOfSequenceFromSequence(std::string);
+    };
 }
 
 #endif /* scanData_hpp */

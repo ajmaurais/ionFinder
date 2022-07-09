@@ -34,7 +34,7 @@
 #include <memory>
 #include <mutex>
 
-#include <inputFiles/dtafilter.hpp>
+#include <inputFiles/inputFiles.hpp>
 #include <msInterface/msInterface.hpp>
 #include <msInterface/msScan.hpp>
 #include <msInterface/ms2File.hpp>
@@ -46,13 +46,13 @@ namespace ms2 {
 
     class MsInterface {
         typedef std::map<std::string, std::shared_ptr<utils::msInterface::MsInterface> > Ms2Map;
-        typedef std::vector<Dtafilter::Scan> InputScanList;
+        typedef std::vector<inputFiles::Scan> InputScanList;
 
         std::mutex mutex;
         Ms2Map _ms2Map;
         void getUniqueFileList(std::vector<std::string>& fnames,
-                               std::vector<Dtafilter::Scan>::const_iterator begin,
-                               std::vector<Dtafilter::Scan>::const_iterator end) const;
+                               std::vector<inputFiles::Scan>::const_iterator begin,
+                               std::vector<inputFiles::Scan>::const_iterator end) const;
     public:
         MsInterface(){
             _ms2Map = Ms2Map();

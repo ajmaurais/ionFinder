@@ -5,7 +5,7 @@
 
 #include <string>
 
-namespace IonFinder {
+namespace inputFiles {
 
     // metadata tags
 	const std::string SAMPLE_NAME = "@SAMPLE_NAME@";

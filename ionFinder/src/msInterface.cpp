@@ -63,7 +63,7 @@ bool ms2::MsInterface::read(std::string fname)
 }
 
 /**
- * Read MS files from a range of Dtafilter::Scan iterators.
+ * Read MS files from a range of inputFiles::Scan iterators.
  * If a file name occurs more than once, it will only be read once.
  * This function is thread safe.
  * @param begin Starting iterator
@@ -142,8 +142,8 @@ bool ms2::MsInterface::getScan(utils::msInterface::Scan& scan, std::string fname
 
 //! Get a list of unique file names between \p begin and \p end
 void ms2::MsInterface::getUniqueFileList(std::vector<std::string> &fnames,
-                                         std::vector<Dtafilter::Scan>::const_iterator begin,
-                                         std::vector<Dtafilter::Scan>::const_iterator end) const
+                                         std::vector<inputFiles::Scan>::const_iterator begin,
+                                         std::vector<inputFiles::Scan>::const_iterator end) const
 {
     fnames.clear();
     for(auto scan = begin; scan != end; scan++){

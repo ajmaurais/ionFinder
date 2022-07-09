@@ -142,7 +142,7 @@ bool IonFinder::Params::getArgs(int argc, const char* const argv[])
                 std::cerr << argv[i] << base::PARAM_ERROR_MESSAGE << argv[i-1] << std::endl;
                 return false;
             }
-            _modFilter = std::stoi(argv[i]);
+            _modFilter = inputFiles::intToModFilter(std::stoi(argv[i]));
             continue;
         }
         if(!strcmp(argv[i], "--fastaFile"))

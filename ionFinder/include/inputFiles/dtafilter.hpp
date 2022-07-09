@@ -30,96 +30,31 @@
 
 #include <iostream>
 #include <fstream>
+#include <map>
 
 #include <paramsBase.hpp>
-#include <scanData.hpp>
+#include <inputFiles/inputFiles.hpp>
 #include <utils.hpp>
 
-namespace Dtafilter{
-	class Scan;
-	
-	std::string const REVERSE_MATCH = "reverse_";
-	
-	bool readFilterFile(const std::string& fname, const std::string& sampleName,
-						std::vector<Dtafilter::Scan>& scans,
-						bool skipReverse = false, int modFilter = 1);
-	
-	class Scan : public scanData::Scan{
-		friend bool readFilterFile(const std::string&, const std::string&,
-								   std::vector<Dtafilter::Scan>&,
-								   bool, int);
-	public:
-		enum class MatchDirection{FORWARD, REVERSE};
-		static MatchDirection strToMatchDirection(std::string);
-		
+namespace inputFiles {
+
+    bool readFilterFiles(const std::map<std::string, std::string>& filterFiles,
+                         std::vector<inputFiles::Scan>&,
+                         bool skipReverse,
+                         ModFilter modFilter);
+
+    class DtaFilterFile {
 	private:
-		std::string _formula;
-		std::string _parentProtein;
-		std::string _parentID;
-		std::string _parentDescription;
-		MatchDirection _matchDirection;
-		std::string _sampleName;
-		bool _unique;
-		
-		bool parse_matchDir_ID_Protein(const std::string&);
-		
+        static bool parse_matchDir_ID_Protein(const std::string &str, Scan &scan) ;
 	public:
-		Scan() : scanData::Scan(){
-			_formula = "";
-			_parentProtein = "";
-			_parentID = "";
-			_parentDescription = "";
-			_unique = false;
-			_matchDirection = MatchDirection::REVERSE;
-		}
-		
-		//modifiers
-		Scan& operator = (const Scan&);
-        void setFormula(std::string s){
-            _formula = s;
-        }
-		void setParentProtein(std::string s){
-			_parentProtein = s;
-		}
-		void setParentID(std::string s){
-			_parentID = s;
-		}
-		void setMatchDirection(MatchDirection m){
-			_matchDirection = m;
-		}
-		void setSampleName(std::string s){
-			_sampleName = s;
-		}
-		void setParentDescription(std::string s){
-			_parentDescription = s;
-		}
-		void setUnique(bool boo){
-			_unique = boo;
-		}
-		
-		//properties
-        std::string getFormula() const{
-            return _formula;
-        }
-		std::string getParentProtein() const{
-			return _parentProtein;
-		}
-		std::string getParentID() const{
-			return _parentID;
-		}
-		MatchDirection getMatchDirection() const{
-			return _matchDirection;
-		}
-		std::string getSampleName() const{
-			return _sampleName;
-		}
-		std::string getParentDescription() const{
-			return _parentDescription;
-		}
-		bool getUnique() const{
-			return _unique;
-		}
-	};
+	    DtaFilterFile() = default;
+
+        bool readFilterFile(const std::string& fname, const std::string& sampleName,
+                                   std::vector<inputFiles::Scan>& scans,
+                                   bool skipReverse = false, ModFilter modFilter = ModFilter::ALL) const;
+
+        static void initilizeFromLine(std::string line, Scan &scan);
+    };
 }
 
 #endif /* dtafilter_hpp */

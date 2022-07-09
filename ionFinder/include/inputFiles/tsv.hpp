@@ -1,5 +1,5 @@
 //
-// inputFiles.hpp
+// tsv.hpp
 // ionFinder
 // -----------------------------------------------------------------------------
 // MIT License
@@ -25,8 +25,8 @@
 // -----------------------------------------------------------------------------
 //
 
-#ifndef inputFiles_hpp
-#define inputFiles_hpp
+#ifndef tsv_hpp
+#define tsv_hpp
 
 #include <inputFiles/dtafilter.hpp>
 #include <ionFinder/params.hpp>
@@ -35,13 +35,7 @@
 #include <tsvFile.hpp>
 #include <tsv_constants.hpp>
 
-#include <thirdparty/rapidxml/rapidxml.hpp>
-
-namespace Dtafilter{
-	bool readFilterFiles(const IonFinder::Params&, std::vector<Dtafilter::Scan>&);
-}
-
-namespace IonFinder{
+namespace inputFiles {
 	const std::string TSV_INPUT_REQUIRED_COLNAMES [] = {SAMPLE_NAME, SEQUENCE, PRECURSOR_FILE, SCAN_NUM};
 	int const TSV_INPUT_REQUIRED_COLNAMES_LEN = 4;
 	const std::string TSV_INPUT_OPTIONAL_COLNAMES [] = {PARENT_ID, PARENT_PROTEIN, PARENT_DESCRIPTION, MATCH_DIRECTION,
@@ -49,8 +43,8 @@ namespace IonFinder{
                                                         PRECURSOR_SCAN};
 	int const TSV_INPUT_OPTIONAL_COLNAMES_LEN = 10;
 	
-	bool readInputTsv(const std::string& ifname, std::vector<Dtafilter::Scan>&scans,
-					  bool skipReverse = false, int modFilter = 1);
+    bool readInputTsv(const std::string& ifname, std::vector<inputFiles::Scan>&scans,
+                      bool skipReverse = false, inputFiles::ModFilter modFilter = ModFilter::ALL);
 }
 
-#endif /* inputFiles_hpp */
+#endif /* tsv_hpp */
