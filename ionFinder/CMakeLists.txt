@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.9)
-project(ionFinder VERSION 1.0.1)
+project(ionFinder VERSION 1.0.2)
 
 SET(CMAKE_BUILD_TYPE Debug)
 set(ION_FINDER_TARGET ionFinder)
@@ -52,6 +52,13 @@ target_include_directories(${ION_FINDER_TARGET}
         PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
         PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/include)
 
+#add peptideUtils library
+if(NOT DEFINED PEPTIDE_UTILS_INCLUDE_DIR OR NOT DEFINED PEPTIDE_UTILS_LIBRARY)
+	find_package(peptideUtils REQUIRED)
+endif()
+target_include_directories(${ION_FINDER_TARGET} PUBLIC ${PEPTIDE_UTILS_INCLUDE_DIR})
+target_link_libraries(${ION_FINDER_TARGET} ${PEPTIDE_UTILS_LIBRARY})
+
 # add zlib library
 option(ENABLE_ZLIB "Link to zlib?" ON)
 if(${ENABLE_ZLIB})
@@ -62,15 +69,8 @@ if(${ENABLE_ZLIB})
     message("-- ionFinder zlib shared lib ${ZLIB_LIBRARIES}")
     message("-- ionFinder zlib include dir ${ZLIB_INCLUDE_DIRS}")
 	target_include_directories(${ION_FINDER_TARGET} PUBLIC ${ZLIB_INCLUDE_DIRS})
-	target_link_libraries(${ION_FINDER_TARGET} ${ZLIB_LIBRARIES})
+    target_link_libraries(${ION_FINDER_TARGET} ${ZLIB_LIBRARIES})
 endif()
-
-#add peptideUtils library
-if(NOT DEFINED PEPTIDE_UTILS_INCLUDE_DIR OR NOT DEFINED PEPTIDE_UTILS_LIBRARY)
-	find_package(peptideUtils REQUIRED)
-endif()
-target_include_directories(${ION_FINDER_TARGET} PUBLIC ${PEPTIDE_UTILS_INCLUDE_DIR})
-target_link_libraries(${ION_FINDER_TARGET} ${PEPTIDE_UTILS_LIBRARY})
 
 #add auto generated headers
 find_package(Python REQUIRED)
@@ -148,6 +148,9 @@ else()
     endfunction()
     WriteBlankGitHeader()
 endif()
+
+install(TARGETS ionFinder
+		RUNTIME DESTINATION bin)
 
 option(BUILD_DOC "Build documentation" OFF)
 if(BUILD_DOC MATCHES ON)
