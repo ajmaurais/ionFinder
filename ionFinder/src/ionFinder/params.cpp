@@ -280,12 +280,12 @@ bool IonFinder::Params::getArgs(int argc, const char* const argv[])
         }
         if(!strcmp(argv[i], "--citStats"))
         {
-            _modMass = CIT_MOD_MASS;
-            _neutralLossMass = CIT_NL_MASS;
-            _ambigiousResidues = CIT_AMB_RESIDUES;
-            _includeCTermMod = false;
-            _calcNL = true;
-            ofname = PEPTIDE_CIT_STATS_OFNAME;
+            _modMass = ionFinder::CIT_MOD_MASS;
+            _neutralLossMass = ionFinder::CIT_NL_MASS;
+            _ambigiousResidues = ionFinder::CIT_AMB_RESIDUES;
+            _includeCTermMod = ionFinder::CIT_INCLUDE_C_TERM_MOD;
+            _calcNL = ionFinder::CIT_CALC_NL;
+            ofname = ionFinder::PEPTIDE_CIT_STATS_OFNAME;
             continue;
         }
         if(!strcmp(argv[i], "--cTermMod"))

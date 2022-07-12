@@ -1,0 +1,17 @@
+// @CMAKE_FILE_WARNING@
+
+#include <string>
+
+#ifndef input_file_constants
+#define input_file_constants
+
+namespace inputFiles {
+
+    // input format strings
+    const std::string DTAFILTER_INPUT_STR = "@DTAFILTER_INPUT_STR@";
+    const std::string TSV_INPUT_STR = "@TSV_INPUT_STR@";
+    const std::string MZ_IDENT_ML_INPUT_STR = "@MZ_IDENT_ML_INPUT_STR@";
+}
+
+#endif
+

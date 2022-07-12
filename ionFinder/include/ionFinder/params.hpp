@@ -35,7 +35,11 @@
 #include <thread>
 
 #include <inputFiles/inputFiles.hpp>
+#include <inputFiles/tsv.hpp>
+#include <inputFiles/dtafilter.hpp>
+#include <inputFiles/mzIdentML.hpp>
 #include <ionFinder/ionFinder.hpp>
+#include <default_args_constants.hpp>
 #include <paramsBase.hpp>
 #include <utils.hpp>
 
@@ -46,23 +50,6 @@ namespace IonFinder{
 	std::string const PROG_HELP_FILE = base::PROG_MAN + "/ionFinder/helpFile.roff";
     std::string const ARG_REQUIRED_STR = "Additional argument required for: ";
 
-    // TODO: Everything in this group should probably be in an auto generated header
-	std::string const DEFAULT_FILTER_FILE_NAME = "DTASelect-filter.txt";
-	std::string const PEPTIDE_MOD_STATS_OFNAME = "peptide_mod_stats.tsv";
-	std::string const PEPTIDE_CIT_STATS_OFNAME = "peptide_cit_stats.tsv";
-	std::string const DTAFILTER_INPUT_STR = "dtafilter";
-	std::string const TSV_INPUT_STR = "tsv";
-	std::string const MZ_IDENT_ML_STR = "mzid";
-
-    double const CIT_NL_MASS = 43.0058;
-    double const DEFAULT_NEUTRAL_LOSS_MASS = CIT_NL_MASS;
-    double const CIT_MOD_MASS = 0.984289;
-    //!default residues which are isobaric with a modification
-    std::string const DEFAULT_AMBIGIOUS_RESIDUES = "";
-	std::string const CIT_AMB_RESIDUES = "NQ";
-
-	class Params;
-	
 	class Params : public base::ParamsBase{
 	public:
 		typedef std::map<std::string, std::string> FilterFilesType;
@@ -140,14 +127,14 @@ namespace IonFinder{
 			_includeReverse = false;
 			_modFilter = inputFiles::ModFilter::ALL;
 			_printSpectraFiles = false;
-			_calcNL = false;
+			_calcNL = ionFinder::DEFAULT_CALC_NL;
             _artifactNLIntFrac = 0.01;
-			_includeCTermMod = true;
-			_dtaFilterBase = DEFAULT_FILTER_FILE_NAME;
+			_includeCTermMod = ionFinder::DEFAULT_INCLUDE_C_TERM_MOD;
+			_dtaFilterBase = ionFinder::DEFAULT_FILTER_FILE_NAME;
 			_modMass = 0;
-			_neutralLossMass = DEFAULT_NEUTRAL_LOSS_MASS;
-			_ambigiousResidues = DEFAULT_AMBIGIOUS_RESIDUES;
-			ofname = PEPTIDE_MOD_STATS_OFNAME;
+			_neutralLossMass = ionFinder::DEFAULT_NEUTRAL_LOSS_MASS;
+			_ambigiousResidues = ionFinder::DEFAULT_AMBIGIOUS_RESIDUES;
+			ofname = ionFinder::PEPTIDE_MOD_STATS_OFNAME;
 			_numThread = 1;
 			_inDirSpecified = false;
             _minNlLabelIntensity = 0;

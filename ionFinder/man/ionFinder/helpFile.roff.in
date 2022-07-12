@@ -5,7 +5,9 @@
 
 \fB@ION_FINDER_TARGET@\fR [options] [input_dir ...]
 
-\fB@ION_FINDER_TARGET@\fR [options] --inputMode tsv <input_file_path> [...]
+\fB@ION_FINDER_TARGET\fR [options] --inputMode @MZ_IDENT_ML_INPUT_STR@ [<input_file> ...] [<input_dir> ...]
+
+\fB@ION_FINDER_TARGET@\fR [options] --inputMode @TSV_INPUT_STR@ <input_file> [...]
 
 .SH DESCRIPTION
 \fB@ION_FINDER_TARGET@\fR Reads peptides from one or more DTASelect-filter files, calculates theoretical B and Y peptide fragments, and searches parent MS-2 scans for theoretical fragments. If no argument is specified for \fIinput_dir\fR, the current working directory is used. 
@@ -40,7 +42,7 @@ Interpret \fB--matchTolerance\fR as ppm.
 Search ms2s with default settings for citrulline. Specifically \fB--citStats\fR sets the following flags:
 .TP
 .in +0.75i
-\fB--modMass \fR0.984 \fB--lossMass\fR 43.0058 \fB--calcNL\fR 1 \fB--isoAA\fR NQ \fB--cTermMod\fR 0 \fB-o\fR peptide_cit_stats.tsv
+\fB--modMass \fR@CIT_MOD_MASS@ \fB--lossMass\fR @CIT_NL_MASS@ \fB--calcNL\fR @CIT_CALC_NL@ \fB--isoAA\fR @CIT_AMB_RESIDUES@ \fB--cTermMod\fR @CIT_INCLUDE_C_TERM_MOD@ \fB-o\fR @PEPTIDE_CIT_STATS_OFNAME@
 
 Later specifications of the previous flags will override those set by \fB--citStats\fR.
 .in
@@ -55,7 +57,7 @@ Specify amino acids whose mass is ambiguous with the amino acids with the dynami
 Specify mass of neutral loss to search for. 
 .TP
 \fB--cTermMod\fR \fI<0/1>\fR
-Specify whether to allow c terminally modified peptides. Default is \fB1\fR.
+Specify whether to allow c terminally modified peptides. Default is \fB@DEFAULT_INCLUDE_C_TERM_MOD@\fR.
 .TP
 .in +0.75i
 \fB0\fR
@@ -70,7 +72,7 @@ Allow c terminally modified peptides.
 .in
 .TP
 \fB--calcNL\fR \fI<0/1>\fR
-Specify whether neutral loss fragment ions should be search for. If this option is set to \fB1\fR without any argument for \fB--lossMass\fR given, it is ignored.  Default is \fB0\fR.
+Specify whether neutral loss fragment ions should be search for. If this option is set to \fB1\fR without any argument for \fB--lossMass\fR given, it is ignored.  Default is \fB@DEFAULT_CALC_NL@\fR.
 .TP
 .in +0.75i
 \fB0\fR
@@ -213,16 +215,22 @@ Include all theoretical NL ions.
 .SS INPUT / OUTPUT OPTIONS
 .TP
 \fB-i, --inputMode\fR \fI<input_mode>\fR
-Specify how peptides to search for in .ms2 file will be supplied. Default is \fBdtafilter\fR.
+Specify how peptides to search for in .ms2 file will be supplied. Default is \fB@DTAFILTER_INPUT_STR@\fR.
 .TP
 .in +0.75i
-\fBdtafilter\fR
+\fB@DTAFILTER_INPUT_STR@\fR
 .in +0.75i
 Use DTAFilter-file(s) as input.
 .in
 .TP
 .in +0.75i
-\fBtsv\fR
+\fB@MZ_IDENT_ML_INPUT_STR@\fR
+.in +0.75i
+Use .mzIdentML files(s) as input.
+.in
+.TP
+.in +0.75i
+\fB@TSV_INPUT_STR@\fR
 .in +0.75i
 Supply peptide list as .tsv formatted file. Required columns are: "@TSV_SAMPLE_NAME@", "@TSV_SEQUENCE@", "@TSV_PRECURSOR_FILE@", "@TSV_SCAN_NUM@".
 
@@ -233,15 +241,15 @@ Optional columns are: "@TSV_FORMULA@", "@TSV_PARENT_ID@", "@TSV_PARENT_PROTEIN@"
 Set working directory from which to run program. By default working directory at runtime is used.
 .TP
 \fB-o, --ofname\fR \fI<ofname>\fR
-Set name of summary output file. By default, \fI<ofname>\fR is \fIpeptide_cit_stats.tsv\fR.
+Set name of summary output file. By default, \fI<ofname>\fR is \fI@PEPTIDE_CIT_STATS_OFNAME@\fR.
 .TP
 \fB-dta\fR \fI<name>\fR
-Set default name of DTASelect-filter files.  By default, \fI<name>\fR is \fIDTASelect-filter.txt\fR.
+Set default name of DTASelect-filter files.  By default, \fI<name>\fR is \fI@DEFAULT_FILTER_FILE_NAME@\fR.
 
 .SS OTHER
 .TP
 \fB--fastaFile\fR \fI<path>\fR
-Specify .fasta formatted file to lookup numbers of modified residues in \fIpeptide_cit_stats.tsv\fR.
+Specify .fasta formatted file to lookup numbers of modified residues in \fI@PEPTIDE_CIT_STATS_OFNAME@\fR.
 .TP
 \fB-I, --printInt\fI<0/1>\fR
 Should peptide fragment ion intensities be included in tsv output? \fB0\fR is the default.
@@ -323,7 +331,7 @@ Classify the fragment ions which were found.
 Determine whether fragments found unambiguously show that the peptide contains the modification.
 .SS 3) OUTPUT
 .IP \[bu] 2
-Write out \fIpeptide_cit_stats.tsv\fR with a summary of the results.
+Write out \fI@PEPTIDE_CIT_STATS_OFNAME@\fR with a summary of the results.
 
 .SH EXAMPLES
 .TP

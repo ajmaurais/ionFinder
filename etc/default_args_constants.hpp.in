@@ -1,0 +1,30 @@
+// @CMAKE_FILE_WARNING@
+
+#include <string>
+
+#ifndef default_arg_constants
+#define default_arg_constants
+
+namespace ionFinder{
+
+    // default file names
+    const std::string DEFAULT_FILTER_FILE_NAME = "@DEFAULT_FILTER_FILE_NAME@";
+    const std::string PEPTIDE_MOD_STATS_OFNAME = "@PEPTIDE_MOD_STATS_OFNAME@";
+    const std::string PEPTIDE_CIT_STATS_OFNAME = "@PEPTIDE_CIT_STATS_OFNAME@";
+
+    // default Cit search parameters
+    double const CIT_NL_MASS = @CIT_NL_MASS@;
+    double const DEFAULT_NEUTRAL_LOSS_MASS = @CIT_NL_MASS@;
+    double const CIT_MOD_MASS = @CIT_MOD_MASS@;
+    int const DEFAULT_INCLUDE_C_TERM_MOD = @DEFAULT_INCLUDE_C_TERM_MOD@;
+    int const CIT_INCLUDE_C_TERM_MOD = @CIT_INCLUDE_C_TERM_MOD@;
+    int const DEFAULT_CALC_NL = @DEFAULT_CALC_NL@;
+    int const CIT_CALC_NL = @CIT_CALC_NL@;
+
+    //!default residues which are isobaric with a modification
+    const std::string DEFAULT_AMBIGIOUS_RESIDUES = "@DEFAULT_AMBIGIOUS_RESIDUES@";
+    const std::string CIT_AMB_RESIDUES = "@CIT_AMB_RESIDUES@";
+}
+
+#endif
+

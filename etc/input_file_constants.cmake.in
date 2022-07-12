@@ -1,0 +1,8 @@
+# @CONFIGURE_FILE_WARNING@
+# Do not edit by hand!
+
+# input format strings
+set(DTAFILTER_INPUT_STR "@DTAFILTER_INPUT_STR@")
+set(TSV_INPUT_STR "@TSV_INPUT_STR@")
+set(MZ_IDENT_ML_INPUT_STR "@MZ_IDENT_ML_INPUT_STR@")
+

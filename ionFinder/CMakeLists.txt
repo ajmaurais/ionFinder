@@ -9,6 +9,8 @@ include(FindPkgConfig)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../peptideUtils/cmake")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 include(tsv_constants) #defines tsv file column headers for help file.
+include(default_args_constants) # defines some default args for help file.
+include(input_file_constants) # defines input file types for help file.
 
 set(CMAKE_CXX_STANDARD 11)
 
@@ -101,6 +103,10 @@ add_configure_file(spectrum_constants SpectrumConstantsHpp "include" "hpp")
 add_dependencies(${ION_FINDER_TARGET} SpectrumConstantsHpp)
 add_configure_file(tsv_constants TSVConstantsHpp "include" "hpp")
 add_dependencies(${ION_FINDER_TARGET} TSVConstantsHpp)
+add_configure_file(input_file_constants InputFileConstantsHpp "include" "hpp")
+add_dependencies(${ION_FINDER_TARGET} InputFileConstantsHpp)
+add_configure_file(default_args_constants DefaultArgConstantsHpp "include" "hpp")
+add_dependencies(${ION_FINDER_TARGET} DefaultArgConstantsHpp)
 
 #add thread library
 find_package(Threads)
