@@ -28,7 +28,7 @@
 #ifndef tsv_hpp
 #define tsv_hpp
 
-#include <inputFiles/dtafilter.hpp>
+#include <inputFiles/inputFiles.hpp>
 #include <scanData.hpp>
 #include <utils.hpp>
 #include <tsvFile.hpp>
@@ -41,9 +41,19 @@ namespace inputFiles {
                                                         FORMULA, FULL_SEQUENCE, UNIQUE, CHARGE, SCORE, PRECURSOR_MZ,
                                                         PRECURSOR_SCAN};
 	int const TSV_INPUT_OPTIONAL_COLNAMES_LEN = 10;
-	
-    bool readInputTsv(const std::string& ifname, std::vector<inputFiles::Scan>&scans,
-                      bool skipReverse = false, inputFiles::ModFilter modFilter = ModFilter::ALL);
+
+	class Tsv : public InputFile {
+	private:
+        bool read(const std::string &ifname, std::vector<inputFiles::Scan> &scans,
+                  const std::string& sampleName) const override;
+    public:
+	    Tsv() : InputFile() {
+	        _fileType = InputFileType::TSV;
+	        _fileExtension = "tsv";
+	    }
+
+        bool findInputFiles(const std::vector<std::string>& inputArgs, std::string& wd) override;
+    };
 }
 
 #endif /* tsv_hpp */

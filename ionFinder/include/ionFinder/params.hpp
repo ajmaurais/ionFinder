@@ -33,6 +33,7 @@
 #include <map>
 #include <vector>
 #include <thread>
+#include <memory>
 
 #include <inputFiles/inputFiles.hpp>
 #include <inputFiles/tsv.hpp>
@@ -51,30 +52,18 @@ namespace IonFinder{
     std::string const ARG_REQUIRED_STR = "Additional argument required for: ";
 
 	class Params : public base::ParamsBase{
-	public:
-		typedef std::map<std::string, std::string> FilterFilesType;
-
-        enum class InputFileType {DTAFILTER, TSV, MZ_IDENT_ML};
-        static InputFileType strToInputFileType(std::string);
-        static std::string inputFileTypeToStr(InputFileType);
-
     private:
 		std::string _parentDir;
-		//!Contains all filter files to be read
-		FilterFilesType _filterFiles;
-		//!how will peptides to be searched for be supplied?
-		InputFileType _inputMode;
 		//!Default name of DTAFilter filter file to search for
 		std::string _dtaFilterBase;
+
+		std::shared_ptr<inputFiles::InputFile> _inputFileReader;
+
 		//! mass of neutral loss to search for
 		double _neutralLossMass;
 		//! Residues which could be isobaric for _neutralLossMass
 		std::string _ambigiousResidues;
 		
-		//! should reverse peptide matches be considered
-		bool _includeReverse;
-		//! Which modification statuses should be included in output?
-		inputFiles::ModFilter _modFilter;
 		//!Should annotaed spectra be printed?
 		bool _printSpectraFiles;
 		//!Should NL ions be search for?
@@ -98,7 +87,7 @@ namespace IonFinder{
 		double _artifactNLIntFrac;
 
 		//! names of folders to read
-		std::vector<std::string> _inDirs;
+		std::vector<std::string> _inputArgs;
 		
 		//! number of thread to use. Default is std::thread::hardware_concurrency() / 2
 		unsigned int _numThread;
@@ -115,7 +104,6 @@ namespace IonFinder{
 		//!Should unique peptide be printed?
 		bool _printPeptideUID;
 		
-		bool getFlist(bool force);
 		static unsigned int computeThreads() ;
 
 	public:
@@ -123,9 +111,7 @@ namespace IonFinder{
 		Params() : ParamsBase(PROG_USAGE_FNAME, PROG_HELP_FILE){
 			_parentDir = "";
 			_fastaFile = "";
-			_inputMode = InputFileType::DTAFILTER;
-			_includeReverse = false;
-			_modFilter = inputFiles::ModFilter::ALL;
+			_inputFileReader = std::shared_ptr<inputFiles::InputFile>();
 			_printSpectraFiles = false;
 			_calcNL = ionFinder::DEFAULT_CALC_NL;
             _artifactNLIntFrac = 0.01;
@@ -148,18 +134,16 @@ namespace IonFinder{
 		bool getArgs(int, const char* const[]) override;
 		
 		//properties
-        static void printVersion(std::ostream& = std::cout) ;
-		const FilterFilesType& getFilterFiles() const{
-			return _filterFiles;
-		}
-		const std::vector<std::string>& getInputDirs() const{
-			return _inDirs;
+        static void printVersion(std::ostream& = std::cout);
+        bool readInputFiles(std::vector<inputFiles::Scan>& scans) const;
+		const std::vector<std::string>& getInputArgs() const{
+			return _inputArgs;
 		}
 		bool getIncludeReverse() const{
-			return _includeReverse;
+			return _inputFileReader->getIncludeReverse();
 		}
-		inputFiles::ModFilter getModFilter() const{
-			return _modFilter;
+		inputFiles::InputFile::ModFilter getModFilter() const{
+			return _inputFileReader->getModFilter();
 		}
 		bool getCalcNL() const{
 			return _calcNL;
@@ -170,8 +154,8 @@ namespace IonFinder{
 		double getNeutralLossMass() const{
 			return _neutralLossMass;
 		}
-		InputFileType getInputMode() const{
-			return _inputMode;
+		inputFiles::InputFile::InputFileType getInputFileType () const{
+			return _inputFileReader->getInputFileType();
 		}
 		std::string getAmbigiousResidues() const{
 			return _ambigiousResidues;
@@ -183,8 +167,8 @@ namespace IonFinder{
 			if(_inDirSpecified)
 				return _wd + "/" + ofname;
 			else{
-				assert(_inDirs.size() == 1);
-				return _inDirs.back() + "/" + ofname;
+				assert(_inputArgs.size() == 1);
+				return _inputArgs.back() + "/" + ofname;
 			}
 		}
 		bool getPrintSpectraFiles() const{

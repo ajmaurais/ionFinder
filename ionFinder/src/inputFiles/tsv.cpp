@@ -49,15 +49,16 @@
  \p ifname must have at least columns with the headers in IonFinder::TSV_INPUT_REQUIRED_COLNAMES
  \param ifname path of .tsv file of peptides to search for
  \param scans empty list of scans to fill
+ \param sampleName If empty, the value for the sampleName column is used, otherwise the sample name
+                   for each scan is set to this value.
  \param skipReverse Should reverse peptide matches be skipped?
  \param modFilter Which scans should be added to \p scans?
  0: only modified, 1: all peptides regardless of modification, 2: only unmodified pepeitde.
  
  \returns true if all files were successfully read.
  */
-bool inputFiles::readInputTsv(const std::string& ifname,
-							 std::vector<inputFiles::Scan>& scans,
-							 bool skipReverse, inputFiles::ModFilter modFilter)
+bool inputFiles::Tsv::read(const std::string& ifname, std::vector<inputFiles::Scan>& scans,
+                           const std::string& sampleName) const
 {
 	utils::TsvFile tsv(ifname);
 	if(!tsv.read()) return false;
@@ -80,11 +81,11 @@ bool inputFiles::readInputTsv(const std::string& ifname,
 			foundOptionalCols[TSV_INPUT_OPTIONAL_COLNAMES[i]] = true;
 		else foundOptionalCols[TSV_INPUT_OPTIONAL_COLNAMES[i]] = false;
 	}
-	
+
 	size_t nRow = tsv.getNrow();
 	for(size_t i = 0; i < nRow; i++)
 	{
-		inputFiles::Scan temp;
+        inputFiles::Scan temp;
 		temp.setMatchDirection(inputFiles::Scan::MatchDirection::FORWARD);
 
 		//required columns
@@ -92,7 +93,7 @@ bool inputFiles::readInputTsv(const std::string& ifname,
 		temp.setSequence(tsv.getValStr(i, inputFiles::SEQUENCE));
         temp.setIsModified(temp.checkIsModified());
 		temp.getPrecursor().setFile(tsv.getValStr(i, inputFiles::PRECURSOR_FILE));
-		temp.setSampleName(tsv.getValStr(i, inputFiles::SAMPLE_NAME));
+		temp.setSampleName(sampleName.empty() ? tsv.getValStr(i, inputFiles::SAMPLE_NAME) : sampleName);
 
 		//add optional columns which were found.
 		if(foundOptionalCols[inputFiles::PARENT_ID])
@@ -119,16 +120,31 @@ bool inputFiles::readInputTsv(const std::string& ifname,
             temp.getPrecursor().setScan(tsv.getValStr(i, inputFiles::PRECURSOR_SCAN));
 		
 		//reverse match filter
-		if(skipReverse && temp.getMatchDirection() == inputFiles::Scan::MatchDirection::REVERSE)
+		if(!_includeReverse && temp.getMatchDirection() == inputFiles::Scan::MatchDirection::REVERSE)
 			continue;
 		
 		//mod filter
-		if((modFilter == inputFiles::ModFilter::ONLY_MODIFIED && !temp.isModified()) ||
-		   (modFilter == inputFiles::ModFilter::EXCLUDE_MODIFIED && temp.isModified()))
+		if((_modFilter == ModFilter::ONLY_MODIFIED && !temp.isModified()) ||
+		   (_modFilter == ModFilter::EXCLUDE_MODIFIED && temp.isModified()))
 			continue;
 		
 		scans.push_back(temp);
 	}
 	
 	return true;
+}
+
+bool inputFiles::Tsv::findInputFiles(const std::vector<std::string> &inputArgs, std::string& wd) {
+    if(inputArgs.empty()) {
+        std::cerr << "ERROR: At least 1 tsv file is required!" << NEW_LINE;
+        return false;
+    }
+    for(const auto& _inFile : inputArgs) {
+        if(!utils::isFile(_inFile)){
+            std::cout << "ERROR: " + _inFile + " is not a file!" << NEW_LINE;
+            return false;
+        }
+        _inputFiles.emplace_back("", _inFile);
+    }
+    return true;
 }

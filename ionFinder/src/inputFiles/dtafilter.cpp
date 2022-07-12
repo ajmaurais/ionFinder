@@ -79,11 +79,9 @@ void inputFiles::DtaFilterFile::initilizeFromLine(std::string line, inputFiles::
  
  \return true if file I/O was successful.
  */
-bool inputFiles::DtaFilterFile::readFilterFile(const std::string& fname,
-                                               const std::string& sampleName,
-							                   std::vector<inputFiles::Scan>& scans,
-							                   bool skipReverse,
-							                   ModFilter modFilter) const
+bool inputFiles::DtaFilterFile::read(const std::string& fname,
+                                     std::vector<inputFiles::Scan>& scans,
+                                     const std::string& sampleName) const
 {
 	std::ifstream inF(fname);
 	if(!inF) return false;
@@ -140,12 +138,12 @@ bool inputFiles::DtaFilterFile::readFilterFile(const std::string& fname,
 					newScan.getPrecursor().setFile(utils::dirName(fname) + "/" + newScan.getPrecursor().getFile());
 					
 					//reverse match filter
-					if(skipReverse && newScan.getMatchDirection() == inputFiles::Scan::MatchDirection::REVERSE)
+					if(!_includeReverse && newScan.getMatchDirection() == inputFiles::Scan::MatchDirection::REVERSE)
 						continue;
 					
 					//mod filter
-					if((modFilter == ModFilter::ONLY_MODIFIED && !newScan.isModified()) ||
-					   (modFilter == ModFilter::EXCLUDE_MODIFIED && newScan.isModified()))
+					if((_modFilter == ModFilter::ONLY_MODIFIED && !newScan.isModified()) ||
+					   (_modFilter == ModFilter::EXCLUDE_MODIFIED && newScan.isModified()))
 						continue;
 					
 					scans.push_back(newScan);
@@ -160,24 +158,27 @@ bool inputFiles::DtaFilterFile::readFilterFile(const std::string& fname,
 }
 
 /**
- * Read list of filter files supplied by \p params
- * \param filterFiles
- * \param scans empty list of scans to fill
- * \param skipReverse skip decoy matches?
- * \param modFilter
- * \return true if all files were successfully read.
+ Searches all directories in inputArgs for DTAFilter files.
+ If inputArgs is empty, current working directory is used.
+ \return true if > 1 filter file was found, else false
  */
-bool inputFiles::readFilterFiles(const std::map<std::string, std::string>& filterFiles,
-                                 std::vector<inputFiles::Scan>& scans,
-                                 bool skipReverse,
-                                 ModFilter modFilter)
+bool inputFiles::DtaFilterFile::findInputFiles(const std::vector<std::string>& inputArgs, std::string& wd)
 {
-    for(auto & filterFile : filterFiles)
-    {
-        if(!inputFiles::DtaFilterFile().readFilterFile(filterFile.second, filterFile.first, scans, skipReverse, modFilter))
-            return false;
+    std::vector<std::string> _inputArgs = inputArgs;
+    if(_inputArgs.empty()){
+        _inputArgs.push_back(wd);
+        wd = utils::parentDir(wd);
     }
-
-    return true;
+    for(const auto& _inDir : _inputArgs)
+    {
+        std::string fname = (inputArgs.empty() ? _inDir : (wd + _inDir)) + ("/" + _fileBasename + "." + _fileExtension);
+        if(utils::fileExists(fname)){
+            _inputFiles.emplace_back(utils::baseName(_inDir), fname);
+        }
+        else {
+            std::cerr << "ERROR: No filter file found in: " << _inDir << NEW_LINE;
+            return false;
+        }
+    }
+    return !_inputFiles.empty();
 }
-

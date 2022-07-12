@@ -69,7 +69,7 @@ PeptideNamespace::IonType PeptideNamespace::strToIonType(const std::string& s)
  \return neutral loss
  */
 std::string PeptideNamespace::FragmentIon::getNLStr() const{
-	return std::string((_nlMass < 1 ? "" : "+")) + std::to_string((int)round(_nlMass));
+	return std::string(_nlMass < 1 ? "" : "+") + std::to_string((int)round(_nlMass));
 }
 
 /**
@@ -105,17 +105,11 @@ std::string PeptideNamespace::ionTypeToStr(const PeptideNamespace::IonType& ionT
 {
 	switch(ionType){
 		case IonType::B : return "b";
-			break;
 		case IonType::Y : return "y";
-			break;
 		case IonType::M : return "M";
-			break;
 		case IonType::B_NL : return "b_nl";
-			break;
 		case IonType::Y_NL : return "y_nl";
-			break;
 		case IonType::M_NL : return "M_nl";
-			break;
 		case IonType::BLANK : return "blank";
 		default:
 			throw std::runtime_error("Not a valid option!");
@@ -580,7 +574,7 @@ void PeptideNamespace::Peptide::removeUnlabeledFrags()
 }
 
 /**
- * Remove FragmentIon (s) which are below a specified intensity threshold.
+ * Remove FragmentIon(s) which are below a specified intensity threshold.
  * \param min_int Minimum ion intensity to allow.
  * \param require_nl Should only neutral loss fragment ions be removed?
  */

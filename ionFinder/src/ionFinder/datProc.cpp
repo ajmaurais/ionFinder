@@ -586,7 +586,7 @@ void IonFinder::findFragments_threadSafe(std::vector<inputFiles::Scan>& scans,
 
 	for(size_t i = beg; i < end; i++)
 	{
-		if((pars.getInputMode() == IonFinder::Params::InputFileType::DTAFILTER &&
+		if((pars.getInputFileType() == inputFiles::InputFile::InputFileType::DTA_FILTER &&
 		    curSample != scans[i].getSampleName()) || !aaDBInit)
 		{
 			//re-init Peptide::AminoAcidMasses for each sample
@@ -595,7 +595,7 @@ void IonFinder::findFragments_threadSafe(std::vector<inputFiles::Scan>& scans,
 			
 			//read sequest params file and init aadb
 			aminoAcidMasses.clear();
-			if(pars.getInputMode() == IonFinder::Params::InputFileType::DTAFILTER)
+			if(pars.getInputFileType() == inputFiles::InputFile::InputFileType::DTA_FILTER)
                 PeptideNamespace::initAminoAcidsMasses(pars, spFname, aminoAcidMasses);
 			else {
                 PeptideNamespace::initAminoAcidsMasses(pars, aminoAcidMasses);

@@ -38,21 +38,20 @@
 
 namespace inputFiles {
 
-    bool readFilterFiles(const std::map<std::string, std::string>& filterFiles,
-                         std::vector<inputFiles::Scan>&,
-                         bool skipReverse,
-                         ModFilter modFilter);
-
-    class DtaFilterFile {
+    class DtaFilterFile : public InputFile {
 	private:
         static bool parse_matchDir_ID_Protein(const std::string &str, Scan &scan) ;
+        bool read(const std::string& fname,
+                  std::vector<inputFiles::Scan>& scans,
+                  const std::string& sampleName) const override;
+
 	public:
-	    DtaFilterFile() = default;
+	    DtaFilterFile() : InputFile() {
+            _fileExtension = "txt";
+            _fileBasename = "DTASelect-filter";
+	    }
 
-        bool readFilterFile(const std::string& fname, const std::string& sampleName,
-                            std::vector<inputFiles::Scan>& scans,
-                            bool skipReverse = false, ModFilter modFilter = ModFilter::ALL) const;
-
+        bool findInputFiles(const std::vector<std::string>& inputArgs, std::string& wd) override;
         static void initilizeFromLine(std::string line, Scan &scan);
     };
 }

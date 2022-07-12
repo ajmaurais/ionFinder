@@ -42,14 +42,11 @@ inputFiles::Scan& inputFiles::Scan::operator = (const inputFiles::Scan& rhs)
     return *this;
 }
 
-inputFiles::ModFilter inputFiles::intToModFilter(int i){
+inputFiles::InputFile::ModFilter inputFiles::InputFile::intToModFilter(int i) {
     switch(i) {
-        case 0:
-            return inputFiles::ModFilter::ONLY_MODIFIED;
-        case 1:
-            return inputFiles::ModFilter::ALL;
-        case 2:
-            return inputFiles::ModFilter::EXCLUDE_MODIFIED;
+        case 0: return ModFilter::ONLY_MODIFIED;
+        case 1: return ModFilter::ALL;
+        case 2: return ModFilter::EXCLUDE_MODIFIED;
         default:
             throw std::invalid_argument("Can not convert '" + std::to_string(i) + "' to ModFilter!");
     }
@@ -68,4 +65,32 @@ inputFiles::Scan::MatchDirection inputFiles::Scan::strToMatchDirection(std::stri
     if(utils::strContains(REVERSE_MATCH, utils::toLower(str)))
         return inputFiles::Scan::MatchDirection::REVERSE;
     return inputFiles::Scan::MatchDirection::FORWARD;
+}
+
+inputFiles::InputFile::InputFileType inputFiles::InputFile::strToInputFileType(std::string s) {
+    if(s == inputFiles::DTAFILTER_INPUT_STR) return InputFileType::DTA_FILTER;
+    if(s == inputFiles::TSV_INPUT_STR) return InputFileType::TSV;
+    if(s == inputFiles::MZ_IDENT_ML_INPUT_STR) return InputFileType::MZ_IDENT_ML;
+    throw std::invalid_argument("'" + s + "' is not a valid InputFileType!");
+}
+
+std::string inputFiles::InputFile::inputFileTypeToStr(inputFiles::InputFile::InputFileType it) {
+    switch(it) {
+        case InputFileType::DTA_FILTER: return inputFiles::DTAFILTER_INPUT_STR;
+        case InputFileType::TSV: return inputFiles::TSV_INPUT_STR;
+        case InputFileType::MZ_IDENT_ML: return inputFiles::MZ_IDENT_ML_INPUT_STR;
+        default:throw std::runtime_error("No string conversion for InputFileType!");
+    }
+}
+
+bool inputFiles::InputFile::read(std::vector<Scan>& scans, bool verbose) const {
+    if(verbose) std::cout << "\nReading input " + _fileBasename + '.' + _fileExtension + " files...";
+    for (const auto &file: _inputFiles) {
+        if (!read(file.first, scans, file.second)) {
+            if(verbose) std::cerr << "\nERROR: Failed to read " << file.second << NEW_LINE;
+            return false;
+        }
+    }
+    if(verbose) std::cout << "Done!\n";
+    return true;
 }

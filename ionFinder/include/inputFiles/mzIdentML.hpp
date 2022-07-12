@@ -34,13 +34,18 @@
 
 namespace inputFiles {
 
-    class MzIdentML {
+    class MzIdentML : public InputFile{
+    private:
+        bool read(const std::string& fname, std::vector<inputFiles::Scan>& scans,
+                  const std::string& sampleName) const override;
 
     public:
-        MzIdentML() = default;
+        MzIdentML() : InputFile() {
+            _fileType = InputFileType::MZ_IDENT_ML;
+            _fileExtension = ".mzid";
+        }
 
-        bool read(const std::string& fname, std::vector<inputFiles::Scan>& scans,
-                  bool skipReverse = false, ModFilter modFilter = ModFilter::ALL) const;
+        bool findInputFiles(const std::vector<std::string>& inputArgs, std::string& wd) override;
     };
 
 }

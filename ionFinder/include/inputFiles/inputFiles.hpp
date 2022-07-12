@@ -28,12 +28,15 @@
 #ifndef inputFiles_hpp
 #define inputFiles_hpp
 
+#include <vector>
+
 #include <scanData.hpp>
+#include <input_file_constants.hpp>
 
 namespace inputFiles {
-    //! Represents which peptides to read from input files
-    enum class ModFilter { ONLY_MODIFIED, ALL, EXCLUDE_MODIFIED };
-    ModFilter intToModFilter(int);
+
+    class Scan;
+    class InputFile;
 
     class Scan : public scanData::Scan{
     public:
@@ -107,6 +110,79 @@ namespace inputFiles {
         }
         static Scan::MatchDirection strToMatchDirection(std::string str);
     };
+
+    class InputFile {
+    public:
+        enum class InputFileType {DTA_FILTER, TSV, MZ_IDENT_ML};
+        //! Represents which peptides to read from input files
+        enum class ModFilter { ONLY_MODIFIED, ALL, EXCLUDE_MODIFIED };
+        static ModFilter intToModFilter(int);
+
+        static InputFileType strToInputFileType(std::string);
+        static std::string inputFileTypeToStr(InputFileType);
+
+    protected:
+        //!how will peptides to be searched for be supplied?
+        InputFileType _fileType;
+        //!Contains all scan input files to be read
+        std::vector<std::pair<std::string, std::string> > _inputFiles;
+        //! should reverse peptide matches be considered
+        bool _includeReverse;
+        //! Which modification statuses should be included in output?
+        ModFilter _modFilter;
+        //! The input file extension
+        std::string _fileExtension;
+        //! The input file basename
+        std::string _fileBasename;
+
+        virtual bool read(const std::string&, std::vector<Scan>&, const std::string&) const = 0;
+
+    public:
+        InputFile() {
+            _fileType = InputFileType::DTA_FILTER;
+            _includeReverse = false;
+            _modFilter = ModFilter::ALL;
+            _fileExtension = "";
+            _fileBasename = "";
+        }
+
+        void setInputFileType(InputFileType ift){
+            _fileType = ift;
+        }
+        void setIncludeReverse(bool includeReverse) {
+            _includeReverse = includeReverse;
+        }
+        void setModFilter(ModFilter modFilter) {
+            _modFilter = modFilter;
+        }
+        void setFileExtension(std::string e) {
+            _fileExtension = e;
+        }
+        void setFileBasename(std::string n) {
+            _fileBasename = n;
+        }
+
+        InputFileType getInputFileType() const{
+            return _fileType;
+        }
+        bool getIncludeReverse() const {
+            return _includeReverse;
+        }
+        ModFilter getModFilter() const {
+            return _modFilter;
+        }
+        std::string getFileExtension() const {
+            return _fileExtension;
+        }
+        std::string getFileBasename() const {
+            return _fileBasename;
+        }
+
+        virtual bool findInputFiles(const std::vector<std::string>& inputArgs, std::string& wd) = 0;
+        bool read(std::vector<Scan>&, bool verbose = false) const;
+    };
+
+
 }
 
 #endif /* inputFiles_hpp */

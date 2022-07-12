@@ -27,7 +27,11 @@
 
 #include <inputFiles/mzIdentML.hpp>
 
-bool inputFiles::MzIdentML::read(const std::string &fname, std::vector<inputFiles::Scan>& scans,
-                                 bool skipReverse, inputFiles::ModFilter modFilter) const {
+bool inputFiles::MzIdentML::read(const std::string &fname, std::vector<inputFiles::Scan> &scans,
+                                 const std::string &sampleName) const {
+    return false;
+}
+
+bool inputFiles::MzIdentML::findInputFiles(const std::vector<std::string> &inputArgs, std::string &wd) {
     return false;
 }

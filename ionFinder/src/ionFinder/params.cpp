@@ -43,20 +43,6 @@ unsigned int IonFinder::Params::computeThreads()
     return ret;
 }
 
-IonFinder::Params::InputFileType IonFinder::Params::strToInputFileType(std::string s) {
-    if(s == IonFinder::DTAFILTER_INPUT_STR) return InputFileType::DTAFILTER;
-    if(s == IonFinder::TSV_INPUT_STR) return InputFileType::TSV;
-    if(s == IonFinder::MZ_IDENT_ML_STR) return InputFileType::MZ_IDENT_ML;
-    throw std::invalid_argument("'" + s + "' is not a valid InputFileType!");
-}
-
-std::string IonFinder::Params::inputFileTypeToStr(IonFinder::Params::InputFileType it) {
-    if(it == InputFileType::DTAFILTER) return IonFinder::DTAFILTER_INPUT_STR;
-    if(it == InputFileType::TSV) return IonFinder::TSV_INPUT_STR;
-    if(it == InputFileType::MZ_IDENT_ML) return IonFinder::MZ_IDENT_ML_STR;
-    throw std::runtime_error("No string conversion for InputFileType!");
-}
-
 /**
  Parses command line arguments and stores in Params object
  \pre current working directory exists
@@ -70,6 +56,11 @@ bool IonFinder::Params::getArgs(int argc, const char* const argv[])
     bool force = false;
     _wd = utils::pwd();
     assert(utils::dirExists(_wd));
+
+    // args to pass to _inputFileReader
+    inputFiles::InputFile::ModFilter modFilter = inputFiles::InputFile::ModFilter::ALL;
+    inputFiles::InputFile::InputFileType inputFileType = inputFiles::InputFile::InputFileType::DTA_FILTER;
+    bool includeReverse = false;
 
     for(int i = 1; i < argc; i++)
     {
@@ -101,7 +92,7 @@ bool IonFinder::Params::getArgs(int argc, const char* const argv[])
                 return false;
             }
             try {
-                _inputMode = strToInputFileType(argv[i]);
+                inputFileType = inputFiles::InputFile::strToInputFileType(argv[i]);
             }
             catch (const std::invalid_argument& e) {
                 std::cerr << e.what() << NEW_LINE;
@@ -141,7 +132,7 @@ bool IonFinder::Params::getArgs(int argc, const char* const argv[])
                 std::cerr << argv[i] << base::PARAM_ERROR_MESSAGE << argv[i-1] << std::endl;
                 return false;
             }
-            _includeReverse = std::stoi(argv[i]);
+            includeReverse = std::stoi(argv[i]);
             continue;
         }
         if(!strcmp(argv[i], "-m") || !strcmp(argv[i], "--modFilter"))
@@ -151,12 +142,13 @@ bool IonFinder::Params::getArgs(int argc, const char* const argv[])
                 usage(IonFinder::ARG_REQUIRED_STR + argv[i-1]);
                 return false;
             }
-            if(!(!strcmp(argv[i], "0") || !strcmp(argv[i], "1") || !strcmp(argv[i], "2")))
-            {
-                std::cerr << argv[i] << base::PARAM_ERROR_MESSAGE << argv[i-1] << std::endl;
+            try {
+                modFilter = inputFiles::InputFile::intToModFilter(std::stoi(argv[i]));
+            }
+            catch (const std::invalid_argument& e) {
+                std::cerr << e.what() << NEW_LINE;
                 return false;
             }
-            _modFilter = inputFiles::intToModFilter(std::stoi(argv[i]));
             continue;
         }
         if(!strcmp(argv[i], "--fastaFile"))
@@ -519,21 +511,21 @@ bool IonFinder::Params::getArgs(int argc, const char* const argv[])
             printGitVersion(std::cout);
             return false;
         }
-        if(!strcmp(argv[i], "-f")){
-            force = true;
-        }
+        // if(!strcmp(argv[i], "-f") || !strcmp(argv[i], "--force")){
+        //     force = true;
+        // }
         else if(utils::isFlag(argv[i])){
             std::cerr << argv[i] << " is an invalid argument." << NEW_LINE;
             usage();
             return false;
         }
-        else{ //we are in input dirs
+        else{ //we are in input args
             while(i < argc){
                 if(utils::isFlag(argv[i])){
                     usage();
                     return false;
                 }
-                _inDirs.emplace_back(argv[i++]);
+                _inputArgs.emplace_back(argv[i++]);
                 _inDirSpecified = true;
             }
         }
@@ -543,49 +535,40 @@ bool IonFinder::Params::getArgs(int argc, const char* const argv[])
     //fix options
     if(_wd[_wd.length() - 1] != '/')
         _wd += "/";
-    if(_inputMode == InputFileType::DTAFILTER){
-        if(!getFlist(force)){
-            std::cerr << "Could not find DTAFilter-files!" << NEW_LINE;
-            return false;
-        }
-    }
-    else if(_inputMode == InputFileType::TSV || _inputMode == InputFileType::MZ_IDENT_ML) {
-        if(_inDirs.empty()) {
-            std::cerr << "ERROR: Input file name is required when using " + inputFileTypeToStr(_inputMode) + " input mode!\n";
-            usage();
-            return false;
-        }
-    }
 
-    return true;
+    // init _inputFileReader
+    if(inputFileType == inputFiles::InputFile::InputFileType::DTA_FILTER)
+        _inputFileReader = std::make_shared<inputFiles::DtaFilterFile>();
+    else if(inputFileType == inputFiles::InputFile::InputFileType::TSV)
+        _inputFileReader = std::make_shared<inputFiles::Tsv>();
+    else if(inputFileType == inputFiles::InputFile::InputFileType::MZ_IDENT_ML)
+        _inputFileReader = std::make_shared<inputFiles::MzIdentML>();
+    else throw std::runtime_error("Unknown inputFileType!");
+
+    _inputFileReader->setIncludeReverse(includeReverse);
+    _inputFileReader->setModFilter(modFilter);
+
+    return _inputFileReader->findInputFiles(_inputArgs, _wd);
+
+    // if(_inputMode == inputFiles::InputFile::InputFileType::DTA_FILTER){
+    //     if(!getFlist(force)){
+    //         std::cerr << "Could not find DTAFilter-files!" << NEW_LINE;
+    //         return false;
+    //     }
+    // }
+    // else if(_inputMode == inputFiles::InputFile::InputFileType::TSV ||
+    //         _inputMode == inputFiles::InputFile::InputFileType::MZ_IDENT_ML) {
+    //     if(_inputArgs.empty()) {
+    //         std::cerr << "ERROR: Input file name is required when using "
+    //                   << inputFiles::InputFile::inputFileTypeToStr(_inputMode)
+    //                   << " input mode!\n";
+    //         usage();
+    //         return false;
+    //     }
+    // }
+
+    // return true;
 } // end of getArgs
-
-/**
- Searches all directories in _inDirs for DTAFilter files.
- If _inDirs is empty, current working directory is used.
- \return true if > 1 filter file was found, else false
- */
-bool IonFinder::Params::getFlist(bool force)
-{
-    if(_inDirs.empty()){
-        _inDirs.push_back(_wd);
-        _wd = utils::parentDir(_wd);
-    }
-    for(auto& _inDir : _inDirs)
-    {
-        std::string fname = (_inDirSpecified ? (_wd + _inDir) : _inDir) + ("/" + _dtaFilterBase);
-        if(utils::fileExists(fname)){
-            _filterFiles[utils::baseName(_inDir)] = fname;
-        }
-        else{
-            if(force) std::cerr << "WARN: ";
-            else std::cerr << "ERROR: ";
-            std::cerr << "No filter file found in: " << _inDir << NEW_LINE;
-            if(force) return false;
-        }
-    }
-    return !_filterFiles.empty();
-}
 
 /**
  * Print program version and git repo info to stream.
@@ -595,4 +578,8 @@ void IonFinder::Params::printVersion(std::ostream& out) {
     out << "ionFinder v" << PROG_VERSION_MAJOR << "."
         << PROG_VERSION_MINOR << "."
         << PROG_VERSION_PATCH << NEW_LINE;
+}
+
+bool IonFinder::Params::readInputFiles(std::vector<inputFiles::Scan> &scans) const {
+    return _inputFileReader->read(scans, true);
 }
