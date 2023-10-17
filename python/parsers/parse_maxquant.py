@@ -141,7 +141,7 @@ def main():
 
     parser.add_argument('-g', '--groupMethod', choices=[0, 1, 2], default=1, type=int,
                         help='How many spectra per peptide? 0: include all scans, '
-                             '1: Only show the best spectra per sequence, file and charge state, '
+                             '1: Only show the best spectra per sequence, file and precursor charge, '
                              '2: Group by charge; show the best spectra, per sequence, and file. '
                              'Default is 1.')
 
@@ -256,5 +256,4 @@ def main():
 
 if __name__ == '__main__':
     main()
-
 
